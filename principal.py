@@ -27,6 +27,7 @@ primerEquipo = None
 segundoEquipo = None
 anio1 = 0
 anio2 = 0
+temporada = ''
 
 
 def inicioValido(c):
@@ -62,12 +63,13 @@ def estadoTres(lexema):
     return
 
 def estadoCuatro(lexema):
-    global anio1, anio2
+    global anio1, anio2, temporada
     lexema = lexema.replace(tokens.t_MENORQUE,"")
     lexema = lexema.replace(tokens.t_MAYORQUE,"")
     anios = lexema.split("-")
     anio1 = int(anios[0])
     anio2 = int(anios[1])
+    temporada = str(anio1) + '-' + str(anio2)
 
 def estado1Valido(lexema):
     valido = False
@@ -109,7 +111,12 @@ def estado4Valido(lexema):
     return valido
 
 def resultados():
-    print(f'El resultado de este partido fue: {primerEquipo} 2 - {segundoEquipo} 1')
+    sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
+    sql = sql + f"WHERE equipo1 = '{equipo1}' "
+    sql = sql + f"AND equipo2 = '{equipo2}' "
+    sql = sql + f"AND temporada = '{temporada}' "
+    
+    ## print(f'El resultado de este partido fue: {primerEquipo} 2 - {segundoEquipo} 1')
 
 def AnalizarProyecto2():
     import tokens
@@ -152,6 +159,15 @@ def AnalizarProyecto2():
 
     if (comandoResultado and comandoVersus and comandoTemporada):
         resultados()
+
+def ConsultaBaseDatos(sql):
+    conn = connect('./laliga.db')
+    curs = conn.cursor()
+
+    curs.execute(sql);
+    rows = curs.fetchall()
+    conn.close()
+    return rows;
 
 def TestBaseDatos():
     conn = connect('./laliga.db')
@@ -489,9 +505,9 @@ def GenerarTablaTokens(tt):
     os.system("open /Applications/Safari.app " + nombreArchivoTtsActual)
 
 
-## AnalizarProyecto2()
+AnalizarProyecto2()
 
-TestBaseDatos()
+## TestBaseDatos()
 
 
 ##### Analizar(tt)
