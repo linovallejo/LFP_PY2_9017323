@@ -1,4 +1,5 @@
 from __future__ import print_function
+import tokens
 from sqlite3 import connect
 from tkinter import *
 from tkinter import messagebox
@@ -35,9 +36,11 @@ def inicioValido(c):
         return True
     return False
 
+
 def estadoCero():
-    global comandoActual 
-    comandoActual = 'RESULTADO “Real Madrid” VS “Villarreal” TEMPORADA <2019-2020>'
+    global comandoActual
+    comandoActual = 'RESULTADO "Real Madrid" VS "Villarreal" TEMPORADA <2018-2019>'
+
 
 def estadoUno(lexema):
     global comandoResultado, comandoVersus, comandoTemporada
@@ -48,32 +51,34 @@ def estadoUno(lexema):
     elif (lexema == tokens.tr_TEMPORADA):
         comandoTemporada = True
 
+
 def estadoDos(lexema):
     return
 
+
 def estadoTres(lexema):
     global primerEquipo, segundoEquipo
-    lexema = lexema.replace(tokens.t_COMILLA,"")
+    lexema = lexema.replace(tokens.t_COMILLA, "")
     if (primerEquipo is None):
         primerEquipo = lexema
     elif (segundoEquipo is None):
         segundoEquipo = lexema
-        primerEquipo = None
-        segundoEquipo = None
     return
+
 
 def estadoCuatro(lexema):
     global anio1, anio2, temporada
-    lexema = lexema.replace(tokens.t_MENORQUE,"")
-    lexema = lexema.replace(tokens.t_MAYORQUE,"")
+    lexema = lexema.replace(tokens.t_MENORQUE, "")
+    lexema = lexema.replace(tokens.t_MAYORQUE, "")
     anios = lexema.split("-")
     anio1 = int(anios[0])
     anio2 = int(anios[1])
     temporada = str(anio1) + '-' + str(anio2)
 
+
 def estado1Valido(lexema):
     valido = False
-    for i in range(1,len(lexema),1):
+    for i in range(1, len(lexema), 1):
         if (lexema[i].isupper()):
             valido = True
         else:
@@ -81,61 +86,85 @@ def estado1Valido(lexema):
     return valido
 
 
-def estado2Valido(lexema):
+def estado2Valido(caracter):
     valido = False
-    for i in range(1,len(lexema),1):
-        if (lexema[i].isdigit()):
-            valido = True
-        else:
-            valido = False
+    if caracter.isdigit():
+        valido = True
+    # for i in range(1, len(lexema), 1):
+    #     if (lexema[i].isdigit()):
+    #         valido = True
+    #     else:
+    #         valido = False
     return valido
+
 
 def estado3Valido(lexema):
     valido = False
     if (lexema[0] == tokens.t_COMILLA and lexema[len(lexema)-1] == tokens.t_COMILLA):
-        for i in range(1,len(lexema),1):
-            if (lexema[i].isalpha() or lexema[i].strip() == ''):
+        for i in range(1, len(lexema), 1):
+            if (lexema[i].isalpha() or lexema[i].strip() == '' or lexema[i] == tokens.t_COMILLA):
                 valido = True
             else:
                 valido = False
     return valido
+
 
 def estado4Valido(lexema):
     valido = False
     if (lexema[0] == tokens.t_MENORQUE and lexema[len(lexema)-1] == tokens.t_MAYORQUE):
-        for i in range(1,len(lexema),1):
-            if (lexema[i].isdigit() or lexema[i] == '-' or lexema[i].strip() == ''):
+        for i in range(1, len(lexema), 1):
+            if (lexema[i].isdigit() or lexema[i] == '-' or lexema[i].strip() == '' or lexema[i] == tokens.t_MENORQUE or lexema[i] == tokens.t_MAYORQUE):
                 valido = True
             else:
                 valido = False
     return valido
 
+
 def resultados():
+    global temporada, primerEquipo, segundoEquipo
     sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
-    sql = sql + f"WHERE equipo1 = '{equipo1}' "
-    sql = sql + f"AND equipo2 = '{equipo2}' "
+    sql = sql + f"WHERE equipo1 = '{primerEquipo}' "
+    sql = sql + f"AND equipo2 = '{segundoEquipo}' "
     sql = sql + f"AND temporada = '{temporada}' "
-    
-    ## print(f'El resultado de este partido fue: {primerEquipo} 2 - {segundoEquipo} 1')
+
+    filas = ConsultaBaseDatos(sql)
+
+    # print(filas)
+
+    golesPrimerEquipo = filas[0][5]
+    golesSegundoEquipo = filas[0][6]
+
+    print(
+        f'El resultado de este partido fue: {primerEquipo} {golesPrimerEquipo} - {segundoEquipo} {golesSegundoEquipo}')
+
 
 def AnalizarProyecto2():
-    import tokens
-    global comandoActual
-    for i in range(1,len(comandoActual),1):
+    global comandoActual, lexemaActual
+    estadoTresInicio = False
+    estadoTresFinal = False
+    estadoCuatroInicio = False
+    estadoCuatroFinal = False
+
+    for i in range(0, len(comandoActual), 1):
         if (comandoActual[i] == tokens.t_COMILLA) and estadoTresInicio == False:
-            estadoTresInicio = True
-        if estadoTresInicio:
             lexemaActual = lexemaActual + comandoActual[i]
-            if (comandoActual[i] == tokens.t_COMILLA):
-                estadoTresFinal = True
-            if estadoTresFinal:
-                if estado3Valido(lexemaActual):
-                    estadoTres(lexemaActual)
-                    estadoTresInicio = False
-                    estadoTresFinal = False
+            estadoTresInicio = True
         else:
-            if (comandoActual[i] == tokens.t_MENORQUE) and estadoCuatroInicio == False:
-                estadoCuatroInicio = True
+            if estadoTresInicio:
+                lexemaActual = lexemaActual + comandoActual[i]
+                if (comandoActual[i] == tokens.t_COMILLA):
+                    estadoTresFinal = True
+                if estadoTresFinal:
+                    if estado3Valido(lexemaActual):
+                        estadoTres(lexemaActual)
+                        estadoTresInicio = False
+                        estadoTresFinal = False
+                        lexemaActual = ''
+
+        if (comandoActual[i] == tokens.t_MENORQUE) and estadoCuatroInicio == False:
+            lexemaActual = lexemaActual + comandoActual[i]
+            estadoCuatroInicio = True
+        else:
             if estadoCuatroInicio:
                 lexemaActual = lexemaActual + comandoActual[i]
                 if (comandoActual[i] == tokens.t_MAYORQUE):
@@ -145,44 +174,50 @@ def AnalizarProyecto2():
                         estadoCuatro(lexemaActual)
                         estadoCuatroInicio = False
                         estadoCuatroFinal = False
+
+        if not estadoTresInicio and not estadoCuatroInicio:
+            if (comandoActual[i].strip() != ''):
+                lexemaActual = lexemaActual + comandoActual[i]
             else:
-                if (comandoActual[i].strip() != ''):
-                    lexemaActual = lexemaActual + comandoActual[i]
-                else:
-                    caracterInicial = lexemaActual[0];
+                if (lexemaActual.strip() != ''):
+                    caracterInicial = lexemaActual[0]
                     if caracterInicial.isupper():
                         if estado1Valido(lexemaActual):
                             estadoUno(lexemaActual)
                     elif caracterInicial.isdigit():
                         if estado2Valido(lexemaActual):
                             estadoDos(lexemaActual)
+                    lexemaActual = ''
 
     if (comandoResultado and comandoVersus and comandoTemporada):
         resultados()
+
 
 def ConsultaBaseDatos(sql):
     conn = connect('./laliga.db')
     curs = conn.cursor()
 
-    curs.execute(sql);
+    curs.execute(sql)
     rows = curs.fetchall()
     conn.close()
-    return rows;
+    return rows
+
 
 def TestBaseDatos():
     conn = connect('./laliga.db')
     curs = conn.cursor()
 
-    curs.execute("SELECT equipo1, equipo2, goles1, goles2 FROM laliga WHERE equipo1 = 'Real Madrid';")
+    curs.execute(
+        "SELECT equipo1, equipo2, goles1, goles2 FROM laliga WHERE equipo1 = 'Real Madrid';")
     for equipo1, equipo2, goles1, goles2 in curs.fetchall():
-        print(equipo1,goles1,equipo2,goles2)
+        print(equipo1, goles1, equipo2, goles2)
 
     conn.close()
 
 
 def estado2Valido(lexema):
     valido = False
-    for i in range(0,len(lexema),1):
+    for i in range(0, len(lexema), 1):
         if (lexema[i].isalnum()):
             valido = True
         elif lexema[i] == '\"':
@@ -190,6 +225,7 @@ def estado2Valido(lexema):
         else:
             valido = False
     return valido
+
 
 def estados3y4Validos(lexema):
     import tokens
@@ -200,16 +236,19 @@ def estados3y4Validos(lexema):
         tipoToken = 'Simbolo'
     return tipoToken
 
+
 def dfaValidoParaId(lexema):
     if inicioValido(lexema[0]):
         if estado1Valido(lexema):
             return True
     return False
 
+
 def dfaValidoParaCadena(lexema):
     if estado2Valido(lexema):
         return True
     return False
+
 
 def Analizar1():
     global archivoDatosCargado, tt, codigoEntrada
@@ -218,9 +257,11 @@ def Analizar1():
         Analizar(tt)
     else:
         if (codigoEntrada == '' or txtCodigo.strip() == ''):
-            messagebox.showerror('Error','Código de Entrada no puede estar en blanco')
+            messagebox.showerror(
+                'Error', 'Código de Entrada no puede estar en blanco')
         elif (archivoDatosCargado == False):
-            messagebox.showerror('Error','Aún no se ha cargado un archivo .form')
+            messagebox.showerror(
+                'Error', 'Aún no se ha cargado un archivo .form')
 
 
 def Analizar(tt):
@@ -237,95 +278,100 @@ def Analizar(tt):
 
     import tokens
 
-
     lexema = ''
     lexemaIdentificador = ''
 
     elementos = []
-    numeroElemento = 1;
+    numeroElemento = 1
     elementoActual = Elemento(numeroElemento, '')
 
     te = TablaDeErrores()
 
     indiceColumna = 0
 
-    for i in range(0,len(codigoEntrada),1):
+    for i in range(0, len(codigoEntrada), 1):
         try:
             caracter = codigoEntrada[i]
 
             indiceColumna = indiceColumna + 1
-            
+
             if (lexema == tokens.t_MAYORQUECOMA):
                 numeroElemento = numeroElemento + 1
-                elementos.append(elementoActual);
+                elementos.append(elementoActual)
                 elementoActual = Elemento(numeroElemento, '')
 
-            if (caracter.isspace() and not comillaAbrir):            
+            if (caracter.isspace() and not comillaAbrir):
                 lexema = cadena
                 if len(lexema) > 0 and lexema[0].isalpha():
                     if lexema in tokens.reservadas:
                         if dfaValidoParaId(lexema):
-                            token = Token('Id',lexema,lineaActual, indiceColumna-len(lexema))
+                            token = Token('Id', lexema, lineaActual,
+                                          indiceColumna-len(lexema))
                             tt.agregar(token)
                             lexemaIdentificador = lexema
                 else:
                     tipoToken = ''
                     tipoToken = estados3y4Validos(lexema)
-                    if tipoToken!='':
-                        token = Token(tipoToken,lexema,lineaActual, indiceColumna-len(lexema))
-                        tt.agregar(token)                    
+                    if tipoToken != '':
+                        token = Token(tipoToken, lexema,
+                                      lineaActual, indiceColumna-len(lexema))
+                        tt.agregar(token)
                 cadena = ''
             elif caracter in tokens.delimitadoresValores:
                 if not comillaAbrir:
                     comillaAbrir = True
                 else:
                     comillaCerrar = True
-                valorActual = cadena.replace("""""","")
+                valorActual = cadena.replace("""""", "")
                 if (not valorActual == ''):
-                    #if (dfaValidoParaCadena(valor)): ====> NO ESTA FUNCIONANDO EN ESTE CASO :(
-                    token = Token('Cadena',valorActual,lineaActual, indiceColumna-len(valorActual))
+                    # if (dfaValidoParaCadena(valor)): ====> NO ESTA FUNCIONANDO EN ESTE CASO :(
+                    token = Token('Cadena', valorActual, lineaActual,
+                                  indiceColumna-len(valorActual))
                     tt.agregar(token)
                     comillaAbrir = False
                     comillaCerrar = False
                     cadena = ''
-                    crearElemento(elementoActual, lexemaIdentificador, valorActual, lineaActual, indiceColumna-len(valorActual))
+                    crearElemento(elementoActual, lexemaIdentificador,
+                                  valorActual, lineaActual, indiceColumna-len(valorActual))
                     valorActual = ''
             else:
-                cadena += codigoEntrada[i];
-
+                cadena += codigoEntrada[i]
 
             if cadena in tokens.reservadas:
                 lexema = cadena
                 if dfaValidoParaId(lexema):
                     columna = indiceColumna - len(lexema) + 1
-                    token = Token('Id',lexema,lineaActual,  columna)
+                    token = Token('Id', lexema, lineaActual,  columna)
                     tt.agregar(token)
                     lexemaIdentificador = lexema
                     cadena = ''
-                    crearElemento(elementoActual, lexemaIdentificador, valorActual, lineaActual, columna)
+                    crearElemento(elementoActual, lexemaIdentificador,
+                                  valorActual, lineaActual, columna)
 
             if cadena in tokens.delimitadoresListaValores:
                 if not listaAbrir:
                     listaAbrir = True
-            
-            if cadena[-2:] in tokens.delimitadoresListaValores and len(cadena)>2 and listaAbrir:
-                    listaValores = cadena.replace("[","").replace("]","")
-                    valores = []
-                    valoresValidosParaCadena = True
-                    for valor in listaValores.split(","):
-                        valor = valor.replace("'","")
-                        if (dfaValidoParaCadena(valor)):
-                            columna = indiceColumna-len(listaValores)+listaValores.index(valor)
-                            token = Token('Cadena',valor,lineaActual, columna)
-                            tt.agregar(token)
-                            valores.append(valor)
-                        else:
-                            valoresValidosParaCadena = False
-                            break
-                    if (valoresValidosParaCadena):
-                        listaAbrir = False
-                        cadena = ''
-                        crearElemento(elementoActual, lexemaIdentificador, valores, lineaActual, indiceColumna-len(valor))
+
+            if cadena[-2:] in tokens.delimitadoresListaValores and len(cadena) > 2 and listaAbrir:
+                listaValores = cadena.replace("[", "").replace("]", "")
+                valores = []
+                valoresValidosParaCadena = True
+                for valor in listaValores.split(","):
+                    valor = valor.replace("'", "")
+                    if (dfaValidoParaCadena(valor)):
+                        columna = indiceColumna - \
+                            len(listaValores)+listaValores.index(valor)
+                        token = Token('Cadena', valor, lineaActual, columna)
+                        tt.agregar(token)
+                        valores.append(valor)
+                    else:
+                        valoresValidosParaCadena = False
+                        break
+                if (valoresValidosParaCadena):
+                    listaAbrir = False
+                    cadena = ''
+                    crearElemento(elementoActual, lexemaIdentificador,
+                                  valores, lineaActual, indiceColumna-len(valor))
 
             if ord(caracter) == 10:
                 lineaActual = lineaActual+1
@@ -342,9 +388,9 @@ def Analizar(tt):
 
         archivoAnalizado = True
     else:
-        messagebox.showerror('Error','El formulario no pudo ser generado. Contacte a soporte técnico :-).')
+        messagebox.showerror(
+            'Error', 'El formulario no pudo ser generado. Contacte a soporte técnico :-).')
         return
-
 
 
 def GenerarReporteErrores(te):
@@ -377,7 +423,7 @@ def GenerarReporteErrores(te):
     codigoHTML += '<th>Columna</th>'
     codigoHTML += '<th>Descripcion</th>'
     codigoHTML += finalFila
-    
+
     i = 1
     for er in te.errores:
         codigoHTML += inicioFilaColumna
@@ -406,7 +452,8 @@ def GenerarReporteErrores(te):
     carpetaReportesErrores = 'reporteserrores'
     fullPathReportesErrores = f'{os.getcwd()}/{carpetaReportesErrores}/'
     nombreArchivoReporteErroresActual = str(uuid.uuid4())
-    nombreArchivoReporteErroresActual = fullPathReportesErrores + nombreArchivoReporteErroresActual + ".html"
+    nombreArchivoReporteErroresActual = fullPathReportesErrores + \
+        nombreArchivoReporteErroresActual + ".html"
     if (os.path.exists(nombreArchivoReporteErroresActual)):
         os.remove(nombreArchivoReporteErroresActual)
 
@@ -414,9 +461,12 @@ def GenerarReporteErrores(te):
         try:
             rep.write(codigoHTML)
         except:
-            print(mensaje='No se pudo crear el Reporte de Errores. Contacte a soporte técnico :-).')
+            print(
+                mensaje='No se pudo crear el Reporte de Errores. Contacte a soporte técnico :-).')
 
-    os.system("open /Applications/Safari.app " + nombreArchivoReporteErroresActual)
+    os.system("open /Applications/Safari.app " +
+              nombreArchivoReporteErroresActual)
+
 
 def GenerarFormularioHtml(codigoHTML):
     import uuid
@@ -433,9 +483,11 @@ def GenerarFormularioHtml(codigoHTML):
         try:
             rep.write(codigoHTML)
         except:
-            print(mensaje='No se pudo crear el formulario. Contacte a soporte técnico :-).')
+            print(
+                mensaje='No se pudo crear el formulario. Contacte a soporte técnico :-).')
 
     os.system("open /Applications/Safari.app " + archivoHtmlActual)
+
 
 def GenerarTablaTokens(tt):
     import uuid
@@ -466,7 +518,7 @@ def GenerarTablaTokens(tt):
     codigoHTML += '<th>Fila</th>'
     codigoHTML += '<th>Columna</th>'
     codigoHTML += finalFila
-    
+
     i = 1
     for to in tt:
         codigoHTML += inicioFilaColumna
@@ -500,17 +552,20 @@ def GenerarTablaTokens(tt):
         try:
             rep.write(codigoHTML)
         except:
-            print(mensaje='No se pudo crear la Tabla de Tokens. Contacte a soporte técnico :-).')
+            print(
+                mensaje='No se pudo crear la Tabla de Tokens. Contacte a soporte técnico :-).')
 
     os.system("open /Applications/Safari.app " + nombreArchivoTtsActual)
 
 
+estadoCero()
+
 AnalizarProyecto2()
 
-## TestBaseDatos()
+# TestBaseDatos()
 
 
-##### Analizar(tt)
+# Analizar(tt)
 
 # UI
 
@@ -518,17 +573,20 @@ def opcionMenuSeleccionada(opcion):
     global archivoAnalizado, tt, te
     opcion = variable.get()
     if (opcion == "---Seleccione-------"):
-        messagebox.showerror('Error','Debe seleccionar alguna de las otras opciones')
+        messagebox.showerror(
+            'Error', 'Debe seleccionar alguna de las otras opciones')
     elif (opcion == "Reporte de tokens"):
         if (archivoAnalizado):
             GenerarTablaTokens(tt.tokens)
         else:
-            messagebox.showerror('Error','Aún no se ha analizado un archivo .form')
+            messagebox.showerror(
+                'Error', 'Aún no se ha analizado un archivo .form')
     elif (opcion == 'Reporte de errores'):
         if (archivoAnalizado):
             GenerarReporteErrores(te)
         else:
-            messagebox.showerror('Error','Aún no se ha analizado un archivo .form')
+            messagebox.showerror(
+                'Error', 'Aún no se ha analizado un archivo .form')
     elif (opcion == 'Manual de Usuario'):
         AbrirManualUsuario()
     elif (opcion == 'Manual Técnico'):
@@ -538,27 +596,24 @@ def opcionMenuSeleccionada(opcion):
 def CrearInterfazUsuario():
     global txtCodigo, archivoDatosCargado, lMenu, menu, variable
 
-
     root = Tk()
     root.geometry("800x700")
     root.title(" Generador de Formularios ")
 
-        
-    lCodigo = Label(text = "Código: ")
-    txtCodigo = Text(root, height = 40,
-                    width = 70,
-                    bg = "light yellow")
+    lCodigo = Label(text="Código: ")
+    txtCodigo = Text(root, height=40,
+                     width=70,
+                     bg="light yellow")
 
-    botonCargarArchivo = Button(root, height = 2,
-                    width = 30,
-                    text ="Cargar Archivo .form",
-                    command = lambda:CargarArchivo())
+    botonCargarArchivo = Button(root, height=2,
+                                width=30,
+                                text="Cargar Archivo .form",
+                                command=lambda: CargarArchivo())
 
-    botonAnalizar = Button(root, height = 4,
-                    width = 20,
-                    text ="Analizar",
-                    command = lambda:Analizar1())
-
+    botonAnalizar = Button(root, height=4,
+                           width=20,
+                           text="Analizar",
+                           command=lambda: Analizar1())
 
     MENUOPTIONS = [
         "---Seleccione-------",
@@ -569,11 +624,12 @@ def CrearInterfazUsuario():
     ]
 
     variable = StringVar(root)
-    variable.set(MENUOPTIONS[0]) # default value
+    variable.set(MENUOPTIONS[0])  # default value
 
-    menu = OptionMenu(root, variable, *MENUOPTIONS, command=opcionMenuSeleccionada)
+    menu = OptionMenu(root, variable, *MENUOPTIONS,
+                      command=opcionMenuSeleccionada)
 
-    lMenu = Label(text = "Reportes")
+    lMenu = Label(text="Reportes")
     lMenu.grid(column=0, row=0)
     lMenu.grid
 
@@ -583,7 +639,6 @@ def CrearInterfazUsuario():
     lCodigo.grid(column=0, row=1, columnspan=2)
     txtCodigo.grid(column=0, row=2, columnspan=2)
     txtCodigo.focus()
-
 
     botonCargarArchivo.grid(column=0, row=3, columnspan=2)
 
@@ -595,5 +650,3 @@ def CrearInterfazUsuario():
     mainloop()
 
 # CrearInterfazUsuario()
-
-
