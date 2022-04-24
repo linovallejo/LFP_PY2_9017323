@@ -138,7 +138,7 @@ def resultados():
         f'El resultado de este partido fue: {primerEquipo} {golesPrimerEquipo} - {segundoEquipo} {golesSegundoEquipo}')
 
 
-def AnalizarProyecto2():
+def AnalisisLexico():
     global comandoActual, lexemaActual
     estadoTresInicio = False
     estadoTresFinal = False
@@ -156,10 +156,16 @@ def AnalizarProyecto2():
                     estadoTresFinal = True
                 if estadoTresFinal:
                     if estado3Valido(lexemaActual):
-                        estadoTres(lexemaActual)
+                        # estadoTres(lexemaActual)
+                        token = Token('Cadena', lexemaActual,
+                                      1, i-len(lexemaActual)+1)
+                        tt.agregar(token)
                         estadoTresInicio = False
                         estadoTresFinal = False
                         lexemaActual = ''
+                    else:
+                        te.agregar(error=ErrorLexico(
+                            'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
 
         if (comandoActual[i] == tokens.t_MENORQUE) and estadoCuatroInicio == False:
             lexemaActual = lexemaActual + comandoActual[i]
@@ -171,9 +177,15 @@ def AnalizarProyecto2():
                     estadoCuatroFinal = True
                 if estadoCuatroFinal:
                     if estado4Valido(lexemaActual):
-                        estadoCuatro(lexemaActual)
+                        # estadoCuatro(lexemaActual)
+                        token = Token('Simbolo', lexemaActual,
+                                      1, i-len(lexemaActual)+1)
+                        tt.agregar(token)
                         estadoCuatroInicio = False
                         estadoCuatroFinal = False
+                    else:
+                        te.agregar(error=ErrorLexico(
+                            'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
 
         if not estadoTresInicio and not estadoCuatroInicio:
             if (comandoActual[i].strip() != ''):
@@ -183,11 +195,61 @@ def AnalizarProyecto2():
                     caracterInicial = lexemaActual[0]
                     if caracterInicial.isupper():
                         if estado1Valido(lexemaActual):
-                            estadoUno(lexemaActual)
+                            # estadoUno(lexemaActual)
+                            token = Token('Id', lexemaActual, 1,
+                                          i-len(lexemaActual)+1)
+                            tt.agregar(token)
+                        else:
+                            te.agregar(error=ErrorLexico(
+                                'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
                     elif caracterInicial.isdigit():
                         if estado2Valido(lexemaActual):
-                            estadoDos(lexemaActual)
+                            # estadoDos(lexemaActual)
+                            token = Token('Entero', lexemaActual,
+                                          1, i-len(lexemaActual)+1)
+                            tt.agregar(token)
+                        else:
+                            te.agregar(error=ErrorLexico(
+                                'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
+
                     lexemaActual = ''
+
+    ImprimirTablaTokens(tt)
+    AnalisisSintactico(tt)
+
+
+def ImprimirTablaTokens(tt):
+    for to in tt.tokens:
+        print(f'{to.id}-{to.lexema}-{to.fila}-{to.columna}')
+
+
+def AnalisisSintactico(tt):
+    global comandoResultado, comandoVersus, comandoTemporada
+    global primerEquipo, segundoEquipo
+    global anio1, anio2, temporada
+    lexema = ''
+    for to in tt.tokens:
+        lexema = to.lexema
+        if (to.id == 'Id'):
+            if (lexema == tokens.tr_RESULTADO):
+                comandoResultado = True
+            elif (lexema == tokens.tr_VERSUS):
+                comandoVersus = True
+            elif (lexema == tokens.tr_TEMPORADA):
+                comandoTemporada = True
+        elif (to.id == 'Cadena'):
+            lexema = to.lexema.replace(tokens.t_COMILLA, "")
+            if (primerEquipo is None):
+                primerEquipo = lexema
+            elif (segundoEquipo is None):
+                segundoEquipo = lexema
+        elif (to.id == 'Simbolo'):
+            lexema = lexema.replace(tokens.t_MENORQUE, "")
+            lexema = lexema.replace(tokens.t_MAYORQUE, "")
+            anios = lexema.split("-")
+            anio1 = int(anios[0])
+            anio2 = int(anios[1])
+            temporada = str(anio1) + '-' + str(anio2)
 
     if (comandoResultado and comandoVersus and comandoTemporada):
         resultados()
@@ -560,7 +622,7 @@ def GenerarTablaTokens(tt):
 
 estadoCero()
 
-AnalizarProyecto2()
+AnalisisLexico()
 
 # TestBaseDatos()
 
