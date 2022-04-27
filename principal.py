@@ -39,7 +39,16 @@ def inicioValido(c):
 
 def estadoCero():
     global comandoActual
-    comandoActual = 'RESULTADO "Real Madrid" VS "Villarreal" TEMPORADA <2018-2019>'
+    comandoActual = 'RESULTADO "Real Madrid" VS "Villarreal" TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'JORNADA 1 TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'JORNADA 2 TEMPORADA <2017-2018> -f reporteJornada2'  # PASSED
+    comandoActual = 'GOLES LOCAL "Real Madrid" TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'GOLES VISITANTE "Sevilla" TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'TABLA TEMPORADA <2017-2018> -f reporteTemporada'  # PASSED
+    comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018'  # PASSED
+    comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018 -ji 20 -jf 38'  # pending
+    comandoActual = 'TOP SUPERIOR TEMPORADA <2017-2018> -n 5'  # pending
+    comandoActual = 'ADIOS'  # not working :thinker
 
 
 def estadoUno(lexema):
@@ -78,7 +87,7 @@ def estadoCuatro(lexema):
 
 def estado1Valido(lexema):
     valido = False
-    for i in range(1, len(lexema), 1):
+    for i in range(0, len(lexema), 1):
         if (lexema[i].isupper()):
             valido = True
         else:
@@ -86,22 +95,22 @@ def estado1Valido(lexema):
     return valido
 
 
-def estado2Valido(caracter):
+def estado7Valido(lexema):
     valido = False
-    if caracter.isdigit():
-        valido = True
-    # for i in range(1, len(lexema), 1):
-    #     if (lexema[i].isdigit()):
-    #         valido = True
-    #     else:
-    #         valido = False
+    # if caracter.isdigit():
+    #     valido = True
+    for i in range(0, len(lexema), 1):
+        if (lexema[i].isdigit()):
+            valido = True
+        else:
+            valido = False
     return valido
 
 
 def estado3Valido(lexema):
     valido = False
     if (lexema[0] == tokens.t_COMILLA and lexema[len(lexema)-1] == tokens.t_COMILLA):
-        for i in range(1, len(lexema), 1):
+        for i in range(0, len(lexema), 1):
             if (lexema[i].isalpha() or lexema[i].strip() == '' or lexema[i] == tokens.t_COMILLA):
                 valido = True
             else:
@@ -112,11 +121,31 @@ def estado3Valido(lexema):
 def estado4Valido(lexema):
     valido = False
     if (lexema[0] == tokens.t_MENORQUE and lexema[len(lexema)-1] == tokens.t_MAYORQUE):
-        for i in range(1, len(lexema), 1):
+        for i in range(0, len(lexema), 1):
             if (lexema[i].isdigit() or lexema[i] == '-' or lexema[i].strip() == '' or lexema[i] == tokens.t_MENORQUE or lexema[i] == tokens.t_MAYORQUE):
                 valido = True
             else:
                 valido = False
+    return valido
+
+
+def estado5Valido(lexema):
+    valido = False
+    for i in range(0, len(lexema), 1):
+        if (lexema[i] == tokens.t_GUION or lexema[i] in tokens.t_BANDERAS):
+            valido = True
+        else:
+            valido = False
+    return valido
+
+
+def estado6Valido(lexema):
+    valido = False
+    for i in range(0, len(lexema), 1):
+        if (lexema[i].isalnum() or lexema[i] == tokens.t_GUIONBAJO):
+            valido = True
+        else:
+            valido = False
     return valido
 
 
@@ -129,7 +158,8 @@ def resultados():
 
     filas = ConsultaBaseDatos(sql)
 
-    # print(filas)
+    print(sql)
+    print(filas)
 
     golesPrimerEquipo = filas[0][5]
     golesSegundoEquipo = filas[0][6]
@@ -144,6 +174,8 @@ def AnalisisLexico():
     estadoTresFinal = False
     estadoCuatroInicio = False
     estadoCuatroFinal = False
+    estadoCincoInicio = False
+    estadoCincoFinal = False
 
     for i in range(0, len(comandoActual), 1):
         if (comandoActual[i] == tokens.t_COMILLA) and estadoTresInicio == False:
@@ -178,7 +210,7 @@ def AnalisisLexico():
                 if estadoCuatroFinal:
                     if estado4Valido(lexemaActual):
                         # estadoCuatro(lexemaActual)
-                        token = Token('Simbolo', lexemaActual,
+                        token = Token('Temporada', lexemaActual,
                                       1, i-len(lexemaActual)+1)
                         tt.agregar(token)
                         estadoCuatroInicio = False
@@ -187,7 +219,51 @@ def AnalisisLexico():
                         te.agregar(error=ErrorLexico(
                             'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
 
-        if not estadoTresInicio and not estadoCuatroInicio:
+        if (comandoActual[i] == tokens.t_GUION) and estadoCincoInicio == False and not estadoCuatroInicio:
+            lexemaActual = lexemaActual + comandoActual[i]
+            estadoCincoInicio = True
+        else:
+            if estadoCincoInicio:
+                if (comandoActual[i].strip() != ''):
+                    lexemaActual = lexemaActual + comandoActual[i]
+                else:
+                    estadoCincoFinal = True
+                if estadoCincoFinal:
+                    if estado5Valido(lexemaActual):
+                        # estadoCuatro(lexemaActual)
+                        token = Token('Bandera', lexemaActual,
+                                      1, i-len(lexemaActual))
+                        tt.agregar(token)
+
+                        # WIP
+                        remainingComandoActual = (comandoActual[i:]).lstrip()
+                        if (remainingComandoActual.strip() != ''):
+                            j = i + 1
+                            lexemaActual = ''
+                            posicion = 0
+                            while posicion < len(remainingComandoActual):
+                                # Archivo
+                                if (remainingComandoActual[posicion].isalnum() or remainingComandoActual[posicion] == tokens.t_GUIONBAJO):
+                                    lexemaActual = lexemaActual + \
+                                        remainingComandoActual[posicion]
+
+                                if (remainingComandoActual[posicion].strip() == '' or (posicion == len(remainingComandoActual)-1)):
+                                    if estado6Valido(lexemaActual):
+                                        token = Token('Archivo', lexemaActual,
+                                                      1, j)
+                                        tt.agregar(token)
+
+                                posicion += 1
+
+                        ####
+
+                        estadoCincoInicio = False
+                        estadoCincoFinal = False
+                    else:
+                        te.agregar(error=ErrorLexico(
+                            'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
+
+        if (not estadoTresInicio and not estadoCuatroInicio and not estadoCincoInicio and comandoActual[i].strip() != tokens.t_COMILLA and comandoActual[i].strip() != tokens.t_MAYORQUE):
             if (comandoActual[i].strip() != ''):
                 lexemaActual = lexemaActual + comandoActual[i]
             else:
@@ -197,21 +273,20 @@ def AnalisisLexico():
                         if estado1Valido(lexemaActual):
                             # estadoUno(lexemaActual)
                             token = Token('Id', lexemaActual, 1,
-                                          i-len(lexemaActual)+1)
+                                          i-len(lexemaActual))
                             tt.agregar(token)
                         else:
                             te.agregar(error=ErrorLexico(
                                 'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
                     elif caracterInicial.isdigit():
-                        if estado2Valido(lexemaActual):
-                            # estadoDos(lexemaActual)
+                        if estado7Valido(lexemaActual):
+                            # estadoSeis(lexemaActual)
                             token = Token('Entero', lexemaActual,
-                                          1, i-len(lexemaActual)+1)
+                                          1, i-len(lexemaActual))
                             tt.agregar(token)
                         else:
                             te.agregar(error=ErrorLexico(
                                 'Undefined', lexemaActual, 1, i, 'Lexema inválido'))
-
                     lexemaActual = ''
 
     ImprimirTablaTokens(tt)
@@ -243,7 +318,7 @@ def AnalisisSintactico(tt):
                 primerEquipo = lexema
             elif (segundoEquipo is None):
                 segundoEquipo = lexema
-        elif (to.id == 'Simbolo'):
+        elif (to.id == 'Temporada'):
             lexema = lexema.replace(tokens.t_MENORQUE, "")
             lexema = lexema.replace(tokens.t_MAYORQUE, "")
             anios = lexema.split("-")
