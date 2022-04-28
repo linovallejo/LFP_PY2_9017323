@@ -8,7 +8,7 @@ from tkinter import messagebox
 from clases import TablaDeErrores, ErrorLexico
 from clases import TablaDeTokens, Token
 
-#import utils
+# import utils
 
 # Globales
 tt = []
@@ -24,6 +24,8 @@ numeroComando = 0
 
 comandoActual = ''
 lexemaActual = ''
+
+nombrePorDefectoArchivo = 'reporte'
 
 comandoResultado = False
 comandoVersus = False
@@ -65,11 +67,12 @@ temporada = ''
 # banderaJi = 0
 # banderaJf = 0
 
-
-def inicioValido(c):
-    if (c.isalpha()):
-        return True
-    return False
+inicioFilaColumna = '<tr><td>'
+inicioFila = '<tr>'
+inicioColumna = '<td>'
+finalColumna = '</td>'
+finalFila = '</tr>'
+finalFilaColumna = '</tr></td>'
 
 
 def estadoCero():
@@ -77,14 +80,14 @@ def estadoCero():
     comandoActual = 'RESULTADO "Real Madrid" VS "Villarreal" TEMPORADA <2018-2019>'  # PASSED
     comandoActual = 'JORNADA 1 TEMPORADA <2018-2019>'  # PASSED
     comandoActual = 'JORNADA 2 TEMPORADA <2017-2018> -f reporteJornada2'  # PASSED
-    comandoActual = 'GOLES LOCAL "Real Madrid" TEMPORADA <2018-2019>'  # PASSED
-    comandoActual = 'GOLES VISITANTE "Sevilla" TEMPORADA <2018-2019>'  # PASSED
-    comandoActual = 'GOLES LOCAL "Valencia" TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'GOLES LOCAL "Real Madrid" TEMPORADA <2017-2018>'  # PASSED
+    comandoActual = 'GOLES VISITANTE "Real Madrid" TEMPORADA <2017-2018>'  # PASSED
+    comandoActual = 'GOLES TOTAL "Real Madrid" TEMPORADA <2017-2018>'  # PASSED
     comandoActual = 'GOLES VISITANTE "Valencia" TEMPORADA <2018-2019>'  # PASSED
     comandoActual = 'GOLES TOTAL "Valencia" TEMPORADA <2018-2019>'  # PASSED
     comandoActual = 'TABLA TEMPORADA <2017-2018> -f reporteTemporada'  # PASSED
-    comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018'  # PASSED
-    comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018 -ji 37 -jf 38'  # PASSED
+    # comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018'  # PASSED
+    # comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018 -ji 37 -jf 38'  # PASSED
     # comandoActual = 'TOP SUPERIOR TEMPORADA <2017-2018> -n 5'  # PASSED
     # comandoActual = 'ADIOS'  # not working :thinker
 
@@ -191,6 +194,189 @@ def estado6ValidoTokenEntero(lexema):
     return valido
 
 
+def ProcesarJornada(filas):
+    import os
+    global inicioFila, finalFila
+    global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
+    global banderaArchivo, banderaN, banderaJi, banderaJf
+    global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
+
+    codigoHTML = ''
+    codigoHTML += '<html><head>'
+    codigoHTML += '<style>'
+    codigoHTML += 'table, th, td {'
+    codigoHTML += 'border: 1px solid black;'
+    codigoHTML += 'border-collapse: collapse; }'
+    codigoHTML += 'tr:nth-child(even) {background-color: #f2f2f2;}'
+    codigoHTML += '</style>'
+    codigoHTML += '</head>'
+    codigoHTML += '<body>'
+    codigoHTML += f'<h1>Partidos de la temporada {temporada} - Jornada {valorJornada}</h1>'
+    codigoHTML += '<table border=1 width=100%>'
+    codigoHTML += inicioFila
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += finalFila
+
+    i = 1
+    for fila in filas:
+        codigoHTML += inicioFilaColumna
+        codigoHTML += str(i)
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += fila[3]
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += str(fila[5])
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += fila[4]
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += str(fila[6])
+        codigoHTML += finalFilaColumna
+        i = i + 1
+
+    codigoHTML += '</table>'
+    codigoHTML += '</body></html>'
+
+    carpetaReportes = 'reportes'
+    fullPathReportes = f'{os.getcwd()}/{carpetaReportes}/'
+    if (banderaArchivo and valorArchivo.strip() != ''):
+        nombreArchivoReporte = fullPathReportes + valorArchivo + ".html"
+    else:
+        nombreArchivoReporte = fullPathReportes + nombrePorDefectoArchivo + ".html"
+    if (os.path.exists(nombreArchivoReporte)):
+        os.remove(nombreArchivoReporte)
+
+    with open(nombreArchivoReporte, 'w') as rep:
+        try:
+            rep.write(codigoHTML)
+        except:
+            print(
+                mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
+
+    os.system("open /Applications/Safari.app " + nombreArchivoReporte)
+
+
+class Equipo(object):
+    def __init__(self, nombre='', puntos=0):
+        self.nombre = nombre
+        self.puntos = puntos
+
+
+def crearEquipo(nombre, puntos):
+    return Equipo(nombre, puntos)
+
+
+def ProcesarTabla(filas1, filas2):
+    import os
+    global inicioFila, finalFila
+    global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
+    global banderaArchivo, banderaN, banderaJi, banderaJf
+    global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
+
+    equipos = []
+    equipoQuePuntea1 = ''
+    equipoQuePuntea2 = ''
+    puntos = 0
+    for equipo in filas1:
+        equipos.append(crearEquipo(equipo, 0))
+
+    for partido in filas2:
+        equipoQuePuntea1 = ''
+        equipoQuePuntea2 = ''
+        puntos = 0
+        if int(partido[5]) > int(partido[6]):  # Gana Local
+            equipoQuePuntea1 = partido[3]
+            puntos = 3
+        elif int(partido[5]) < int(partido[6]):  # Gana Visitante
+            equipoQuePuntea1 = partido[4]
+            puntos = 3
+        elif int(partido[5]) == int(partido[6]):  # Empate
+            equipoQuePuntea1 = partido[3]
+            equipoQuePuntea2 = partido[4]
+            puntos = 1
+
+        if (equipoQuePuntea2.strip() == ''):
+            for index, item in enumerate(equipos):
+                if item.nombre == equipoQuePuntea1:
+                    item.puntos += puntos
+        else:
+            for index, item in enumerate(equipos):
+                if item.nombre == equipoQuePuntea1:
+                    item.puntos += puntos
+            for index, item in enumerate(equipos):
+                if item.nombre == equipoQuePuntea2:
+                    item.puntos += puntos
+
+    codigoHTML = ''
+    for eq in equipos:
+        print(f'{eq.nombre} - {eq.puntos}')
+
+    # codigoHTML += '<html><head>'
+    # codigoHTML += '<style>'
+    # codigoHTML += 'table, th, td {'
+    # codigoHTML += 'border: 1px solid black;'
+    # codigoHTML += 'border-collapse: collapse; }'
+    # codigoHTML += 'tr:nth-child(even) {background-color: #f2f2f2;}'
+    # codigoHTML += '</style>'
+    # codigoHTML += '</head>'
+    # codigoHTML += '<body>'
+    # codigoHTML += f'<h1>Partidos de la temporada {temporada} - Jornada {valorJornada}</h1>'
+    # codigoHTML += '<table border=1 width=100%>'
+    # codigoHTML += inicioFila
+    # codigoHTML += '<th></th>'
+    # codigoHTML += '<th></th>'
+    # codigoHTML += '<th></th>'
+    # codigoHTML += '<th></th>'
+    # codigoHTML += '<th></th>'
+    # codigoHTML += finalFila
+
+    # i = 1
+    # for fila in filas:
+    #     codigoHTML += inicioFilaColumna
+    #     codigoHTML += str(i)
+    #     codigoHTML += finalColumna
+    #     codigoHTML += inicioColumna
+    #     codigoHTML += fila[3]
+    #     codigoHTML += finalColumna
+    #     codigoHTML += inicioColumna
+    #     codigoHTML += str(fila[5])
+    #     codigoHTML += finalColumna
+    #     codigoHTML += inicioColumna
+    #     codigoHTML += fila[4]
+    #     codigoHTML += finalColumna
+    #     codigoHTML += inicioColumna
+    #     codigoHTML += str(fila[6])
+    #     codigoHTML += finalFilaColumna
+    #     i = i + 1
+
+    # codigoHTML += '</table>'
+    # codigoHTML += '</body></html>'
+
+    # carpetaReportes = 'reportes'
+    # fullPathReportes = f'{os.getcwd()}/{carpetaReportes}/'
+    # if (banderaArchivo and valorArchivo.strip() != ''):
+    #     nombreArchivoReporte = fullPathReportes + valorArchivo + ".html"
+    # else:
+    #     nombreArchivoReporte = fullPathReportes + nombrePorDefectoArchivo + ".html"
+    # if (os.path.exists(nombreArchivoReporte)):
+    #     os.remove(nombreArchivoReporte)
+
+    # with open(nombreArchivoReporte, 'w') as rep:
+    #     try:
+    #         rep.write(codigoHTML)
+    #     except:
+    #         print(
+    #             mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
+
+    # os.system("open /Applications/Safari.app " + nombreArchivoReporte)
+
+
 def Resultados():
     global comandoResultado, comandoVersus, comandoTemporada
     global comandoJornada, valorJornada
@@ -226,9 +412,11 @@ def Resultados():
             sql2 = sql2 + f"WHERE equipo2 = '{primerEquipo}' "
             sql2 = sql2 + f"AND temporada = '{temporada}' "
     elif (comandoTabla):
-        sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
-        sql = sql + f"WHERE temporada = '{temporada}' "
-        sql = sql + f"ORDER BY jornada = '{valorJornada}' "
+        sql1 = f"SELECT DISTINCT(equipo1) FROM laliga WHERE temporada = '{temporada}'"
+
+        sql2 = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
+        sql2 = sql2 + f"WHERE temporada = '{temporada}' "
+        sql2 = sql2 + f"ORDER BY jornada = '{valorJornada}' "
         # La función que calcule puntos debe usarse también para comandoTop
     elif (comandoPartidos):
         sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
@@ -264,15 +452,46 @@ def Resultados():
 
     elif (comandoJornada):
         print(filas)
+
+        ProcesarJornada(filas)
+
+    elif (comandoTabla):
+
+        filas1 = ConsultaBaseDatos(sql1)
+        filas2 = ConsultaBaseDatos(sql2)
+        print(filas1)
+        # print(filas2)
+
+        ProcesarTabla(filas1, filas2)
+
     elif (comandoGoles):
+        totalGoles = 0
+        expresion = ''
         if (comandoLocal or comandoTotal):
             print(filas1)
+            if (comandoLocal):
+                expresion = ' como local '
+            if (comandoTotal):
+                expresion = ' en total '
+            totalGoles += int(filas1[0][0])
         if (comandoVisitante or comandoTotal):
             print(filas2)
+            if (comandoVisitante):
+                expresion = ' como visitante '
+            if (comandoTotal):
+                expresion = ' en total '
+            totalGoles += int(filas2[0][0])
+
+        print(
+            f'Los goles anotados por el {primerEquipo} {expresion} en la temporada {temporada} fueron {totalGoles}')
+
     elif (comandoTabla):
         print(filas)
     elif (comandoPartidos):
         print(filas)
+        print(
+            f'Generando archivo de resultados de temporada {temporada} del {primerEquipo}')
+
     elif (comandoTop):
         print(filas)
 
@@ -509,21 +728,25 @@ def AnalisisSintactico(tt):
             if (i < len(tt.tokens)):
                 proximoToken = tt.tokens[tt.tokens.index(to)+1]
                 if (lexema == tokens.t_EFE):
+                    # and proximoToken.linea == to.linea):
                     if (proximoToken.id == 'Archivo'):
                         banderaArchivo = True
                         valorArchivo = proximoToken.lexema
                     # else: ERROR
                 elif (lexema == tokens.t_ENE):
+                    # and proximoToken.linea == to.linea):
                     if (proximoToken.id == 'Entero'):
                         banderaN = True
                         valorBanderaN = proximoToken.lexema
                     # else: ERROR
                 elif (lexema == tokens.t_JOTAI):
+                    # and proximoToken.linea == to.linea):
                     if (proximoToken.id == 'Entero'):
                         banderaJi = True
                         valorBanderaJi = proximoToken.lexema
                     # else: ERROR
                 elif (lexema == tokens.t_JOTAF):
+                    # and proximoToken.linea == to.linea):
                     if (proximoToken.id == 'Entero'):
                         banderaJf = True
                         valorBanderaJf = proximoToken.lexema
@@ -709,8 +932,6 @@ AnalisisLexico()
 # TestBaseDatos()
 
 
-# Analizar(tt)
-
 # UI
 
 def opcionMenuSeleccionada(opcion):
@@ -735,63 +956,6 @@ def opcionMenuSeleccionada(opcion):
         AbrirManualUsuario()
     elif (opcion == 'Manual Técnico'):
         AbrirManualTecnico()
-
-
-def CrearInterfazUsuario():
-    global txtCodigo, archivoDatosCargado, lMenu, menu, variable
-
-    root = Tk()
-    root.geometry("800x700")
-    root.title(" Generador de Formularios ")
-
-    lCodigo = Label(text="Código: ")
-    txtCodigo = Text(root, height=40,
-                     width=70,
-                     bg="light yellow")
-
-    botonCargarArchivo = Button(root, height=2,
-                                width=30,
-                                text="Cargar Archivo .form",
-                                command=lambda: CargarArchivo())
-
-    botonAnalizar = Button(root, height=4,
-                           width=20,
-                           text="Analizar",
-                           command=lambda: Analizar1())
-
-    MENUOPTIONS = [
-        "---Seleccione-------",
-        "Reporte de tokens",
-        "Reporte de errores",
-        "Manual de Usuario",
-        "Manual Técnico"
-    ]
-
-    variable = StringVar(root)
-    variable.set(MENUOPTIONS[0])  # default value
-
-    menu = OptionMenu(root, variable, *MENUOPTIONS,
-                      command=opcionMenuSeleccionada)
-
-    lMenu = Label(text="Reportes")
-    lMenu.grid(column=0, row=0)
-    lMenu.grid
-
-    menu.grid(column=1, row=0)
-    menu.config(bg='light blue')
-
-    lCodigo.grid(column=0, row=1, columnspan=2)
-    txtCodigo.grid(column=0, row=2, columnspan=2)
-    txtCodigo.focus()
-
-    botonCargarArchivo.grid(column=0, row=3, columnspan=2)
-
-    botonAnalizar.grid(column=0, row=4, columnspan=2)
-
-    root.columnconfigure(index=0, weight=1)
-    root.columnconfigure(index=1, weight=3)
-
-    mainloop()
 
 
 def CrearInterfazUsuario():
