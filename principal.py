@@ -77,19 +77,23 @@ finalFilaColumna = '</tr></td>'
 
 def estadoCero():
     global comandoActual
-    comandoActual = 'RESULTADO "Real Madrid" VS "Villarreal" TEMPORADA <2018-2019>'  # PASSED
-    comandoActual = 'JORNADA 1 TEMPORADA <2018-2019>'  # PASSED
-    comandoActual = 'JORNADA 2 TEMPORADA <2017-2018> -f reporteJornada2'  # PASSED
-    comandoActual = 'GOLES LOCAL "Real Madrid" TEMPORADA <2017-2018>'  # PASSED
-    comandoActual = 'GOLES VISITANTE "Real Madrid" TEMPORADA <2017-2018>'  # PASSED
-    comandoActual = 'GOLES TOTAL "Real Madrid" TEMPORADA <2017-2018>'  # PASSED
-    comandoActual = 'GOLES VISITANTE "Valencia" TEMPORADA <2018-2019>'  # PASSED
-    comandoActual = 'GOLES TOTAL "Valencia" TEMPORADA <2018-2019>'  # PASSED
-    comandoActual = 'TABLA TEMPORADA <2017-2018> -f reporteTemporada'  # PASSED
-    # comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018'  # PASSED
-    # comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018 -ji 37 -jf 38'  # PASSED
-    # comandoActual = 'TOP SUPERIOR TEMPORADA <2017-2018> -n 5'  # PASSED
-    # comandoActual = 'ADIOS'  # not working :thinker
+    comandoActual = 'RESULTADO "Real Madrid" VS "Villarreal" TEMPORADA <2019-2020>'  # PASSED
+    comandoActual = 'JORNADA 1 TEMPORADA <2019-2020>'  # PASSED
+    comandoActual = 'JORNADA 2 TEMPORADA <2019-2020> -f reporteJornada2'  # PASSED
+    comandoActual = 'GOLES LOCAL "Real Madrid" TEMPORADA <2019-2020>'  # PASSED
+    comandoActual = 'GOLES VISITANTE "Real Madrid" TEMPORADA <2019-2020>'  # PASSED
+    comandoActual = 'GOLES TOTAL "Real Madrid" TEMPORADA <2019-2020>'  # PASSED
+    comandoActual = 'GOLES VISITANTE "Valencia" TEMPORADA <2019-2020>'  # PASSED
+    comandoActual = 'GOLES TOTAL "Valencia" TEMPORADA <2019-2020>'  # PASSED
+    comandoActual = 'TABLA TEMPORADA <2019-2020> -f reporteTemporada'  # PASSED
+    # comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2019-2020> -f RealMadrid20172018'  # PASSED
+    # comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2019-2020> -f RealMadrid20172018 -ji 37 -jf 38'  # PASSED
+    comandoActual = 'TOP SUPERIOR TEMPORADA <2019-2020> -n 5'  # PASSED
+    # comandoActual = 'TOP INFERIOR TEMPORADA <2019-2020> -n 5'  # PASSED
+    comandoActual = 'ADIOS'  # PASSED
+    # comandoActual = 'JORNADA 17 TEMPORADA <2019-2020> -f reporteJornada2'  # PASSED
+    # comandoActual = 'GOLES TOTAL "Real Madrid" TEMPORADA <2019-2020>'  # PASSED
+    # comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2019-2020> -f RealMadrid20172018'  # PASSED
 
 
 def estadoUno(lexema):
@@ -262,6 +266,74 @@ def ProcesarJornada(filas):
     os.system("open /Applications/Safari.app " + nombreArchivoReporte)
 
 
+def ProcesarPartidos(filas):
+    import os
+    global inicioFila, finalFila
+    global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
+    global banderaArchivo, banderaN, banderaJi, banderaJf
+    global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
+
+    codigoHTML = ''
+    codigoHTML += '<html><head>'
+    codigoHTML += '<style>'
+    codigoHTML += 'table, th, td {'
+    codigoHTML += 'border: 1px solid black;'
+    codigoHTML += 'border-collapse: collapse; }'
+    codigoHTML += 'tr:nth-child(even) {background-color: #f2f2f2;}'
+    codigoHTML += '</style>'
+    codigoHTML += '</head>'
+    codigoHTML += '<body>'
+    codigoHTML += f'<h1>Partidos de la temporada {temporada} - Equipo {primerEquipo}</h1>'
+    codigoHTML += '<table border=1 width=100%>'
+    codigoHTML += inicioFila
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += finalFila
+
+    i = 1
+    for fila in filas:
+        codigoHTML += inicioFilaColumna
+        codigoHTML += str(i)
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += fila[3]
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += str(fila[5])
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += fila[4]
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += str(fila[6])
+        codigoHTML += finalFilaColumna
+        i = i + 1
+
+    codigoHTML += '</table>'
+    codigoHTML += '</body></html>'
+
+    carpetaReportes = 'reportes'
+    fullPathReportes = f'{os.getcwd()}/{carpetaReportes}/'
+    if (banderaArchivo and valorArchivo.strip() != ''):
+        nombreArchivoReporte = fullPathReportes + valorArchivo + ".html"
+    else:
+        nombreArchivoReporte = fullPathReportes + nombrePorDefectoArchivo + ".html"
+    if (os.path.exists(nombreArchivoReporte)):
+        os.remove(nombreArchivoReporte)
+
+    with open(nombreArchivoReporte, 'w') as rep:
+        try:
+            rep.write(codigoHTML)
+        except:
+            print(
+                mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
+
+    os.system("open /Applications/Safari.app " + nombreArchivoReporte)
+
+
 class Equipo(object):
     def __init__(self, nombre='', puntos=0):
         self.nombre = nombre
@@ -272,17 +344,15 @@ def crearEquipo(nombre, puntos):
     return Equipo(nombre, puntos)
 
 
-def ProcesarTabla(filas1, filas2):
-    import os
-    global inicioFila, finalFila
-    global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
-    global banderaArchivo, banderaN, banderaJi, banderaJf
-    global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
-
+def CalcularTabla(filas1, filas2, descendente):
     equipos = []
     equipoQuePuntea1 = ''
     equipoQuePuntea2 = ''
     puntos = 0
+
+    realmadrid = ''
+    contador = 0
+
     for equipo in filas1:
         equipos.append(crearEquipo(equipo, 0))
 
@@ -293,6 +363,7 @@ def ProcesarTabla(filas1, filas2):
         if int(partido[5]) > int(partido[6]):  # Gana Local
             equipoQuePuntea1 = partido[3]
             puntos = 3
+
         elif int(partido[5]) < int(partido[6]):  # Gana Visitante
             equipoQuePuntea1 = partido[4]
             puntos = 3
@@ -301,80 +372,121 @@ def ProcesarTabla(filas1, filas2):
             equipoQuePuntea2 = partido[4]
             puntos = 1
 
+        if (equipoQuePuntea1 == 'Real Madrid' or equipoQuePuntea2 == 'Real Madrid'):
+            realmadrid += str(partido[2]) + '-'
+            contador += 1
+
         if (equipoQuePuntea2.strip() == ''):
             for index, item in enumerate(equipos):
-                if item.nombre == equipoQuePuntea1:
+                if item.nombre[0] == equipoQuePuntea1:
                     item.puntos += puntos
         else:
             for index, item in enumerate(equipos):
-                if item.nombre == equipoQuePuntea1:
+                if item.nombre[0] == equipoQuePuntea1:
                     item.puntos += puntos
             for index, item in enumerate(equipos):
-                if item.nombre == equipoQuePuntea2:
+                if item.nombre[0] == equipoQuePuntea2:
                     item.puntos += puntos
 
+    if (descendente):
+        tabla = sorted(equipos, key=lambda equipo: equipo.puntos, reverse=True)
+    else:
+        tabla = sorted(equipos, key=lambda equipo: equipo.puntos)
+
+    return tabla
+
+
+def ProcesarTabla(filas1, filas2):
+    import os
+    global inicioFila, finalFila
+    global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
+    global banderaArchivo, banderaN, banderaJi, banderaJf
+    global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
+
+    tabla = CalcularTabla(filas1, filas2, True)
+
+    for eq in tabla:
+        print(f'{eq.nombre[0]} - {eq.puntos}')
+
     codigoHTML = ''
-    for eq in equipos:
-        print(f'{eq.nombre} - {eq.puntos}')
+    codigoHTML += '<html><head>'
+    codigoHTML += '<style>'
+    codigoHTML += 'table, th, td {'
+    codigoHTML += 'border: 1px solid black;'
+    codigoHTML += 'border-collapse: collapse; }'
+    codigoHTML += 'tr:nth-child(even) {background-color: #f2f2f2;}'
+    codigoHTML += '</style>'
+    codigoHTML += '</head>'
+    codigoHTML += '<body>'
+    codigoHTML += f'<h1>Tabla de clasificación de la temporada {temporada}</h1>'
+    codigoHTML += '<table border=1 width=100%>'
+    codigoHTML += inicioFila
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += '<th></th>'
+    codigoHTML += finalFila
 
-    # codigoHTML += '<html><head>'
-    # codigoHTML += '<style>'
-    # codigoHTML += 'table, th, td {'
-    # codigoHTML += 'border: 1px solid black;'
-    # codigoHTML += 'border-collapse: collapse; }'
-    # codigoHTML += 'tr:nth-child(even) {background-color: #f2f2f2;}'
-    # codigoHTML += '</style>'
-    # codigoHTML += '</head>'
-    # codigoHTML += '<body>'
-    # codigoHTML += f'<h1>Partidos de la temporada {temporada} - Jornada {valorJornada}</h1>'
-    # codigoHTML += '<table border=1 width=100%>'
-    # codigoHTML += inicioFila
-    # codigoHTML += '<th></th>'
-    # codigoHTML += '<th></th>'
-    # codigoHTML += '<th></th>'
-    # codigoHTML += '<th></th>'
-    # codigoHTML += '<th></th>'
-    # codigoHTML += finalFila
+    i = 1
+    for eq in tabla:
+        codigoHTML += inicioFilaColumna
+        codigoHTML += str(i)
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += eq.nombre[0]
+        codigoHTML += finalColumna
+        codigoHTML += inicioColumna
+        codigoHTML += str(eq.puntos)
+        codigoHTML += finalFilaColumna
+        i = i + 1
 
-    # i = 1
-    # for fila in filas:
-    #     codigoHTML += inicioFilaColumna
-    #     codigoHTML += str(i)
-    #     codigoHTML += finalColumna
-    #     codigoHTML += inicioColumna
-    #     codigoHTML += fila[3]
-    #     codigoHTML += finalColumna
-    #     codigoHTML += inicioColumna
-    #     codigoHTML += str(fila[5])
-    #     codigoHTML += finalColumna
-    #     codigoHTML += inicioColumna
-    #     codigoHTML += fila[4]
-    #     codigoHTML += finalColumna
-    #     codigoHTML += inicioColumna
-    #     codigoHTML += str(fila[6])
-    #     codigoHTML += finalFilaColumna
-    #     i = i + 1
+    codigoHTML += '</table>'
+    codigoHTML += '</body></html>'
 
-    # codigoHTML += '</table>'
-    # codigoHTML += '</body></html>'
+    carpetaReportes = 'reportes'
+    fullPathReportes = f'{os.getcwd()}/{carpetaReportes}/'
+    if (banderaArchivo and valorArchivo.strip() != ''):
+        nombreArchivoReporte = fullPathReportes + valorArchivo + ".html"
+    else:
+        nombreArchivoReporte = fullPathReportes + nombrePorDefectoArchivo + ".html"
+    if (os.path.exists(nombreArchivoReporte)):
+        os.remove(nombreArchivoReporte)
 
-    # carpetaReportes = 'reportes'
-    # fullPathReportes = f'{os.getcwd()}/{carpetaReportes}/'
-    # if (banderaArchivo and valorArchivo.strip() != ''):
-    #     nombreArchivoReporte = fullPathReportes + valorArchivo + ".html"
-    # else:
-    #     nombreArchivoReporte = fullPathReportes + nombrePorDefectoArchivo + ".html"
-    # if (os.path.exists(nombreArchivoReporte)):
-    #     os.remove(nombreArchivoReporte)
+    with open(nombreArchivoReporte, 'w') as rep:
+        try:
+            rep.write(codigoHTML)
+        except:
+            print(
+                mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
 
-    # with open(nombreArchivoReporte, 'w') as rep:
-    #     try:
-    #         rep.write(codigoHTML)
-    #     except:
-    #         print(
-    #             mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
+    os.system("open /Applications/Safari.app " + nombreArchivoReporte)
 
-    # os.system("open /Applications/Safari.app " + nombreArchivoReporte)
+
+def ProcesarTop(filas1, filas2):
+    global comandoSuperior, comandoInferior
+    global banderaN, valorBanderaN
+    tipo = ''
+    limite = 5
+    if (banderaN and int(valorBanderaN) > 0):
+        limite = int(valorBanderaN)
+
+    if (comandoSuperior):
+        tabla = CalcularTabla(filas1, filas2, True)
+        tipo = 'superior'
+    elif (comandoInferior):
+        tabla = CalcularTabla(filas1, filas2, False)
+        tipo = 'inferior'
+    else:
+        # Recuperación de error al no venir ni el identificador SUPERIOR ni el INFERIOR
+        tabla = CalcularTabla(filas1, filas2, True)
+        tipo = 'superior'
+
+    print(f'El top {tipo} de la temporada {temporada} fue:')
+    i = 1
+    for eq in tabla:
+        print(f'{str(i)} - {eq.nombre[0]}')
+        i += 1
+        if (i > limite):
+            break
 
 
 def Resultados():
@@ -416,8 +528,7 @@ def Resultados():
 
         sql2 = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
         sql2 = sql2 + f"WHERE temporada = '{temporada}' "
-        sql2 = sql2 + f"ORDER BY jornada = '{valorJornada}' "
-        # La función que calcule puntos debe usarse también para comandoTop
+        sql2 = sql2 + f"ORDER BY CAST(jornada as integer) "
     elif (comandoPartidos):
         sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
         sql = sql + \
@@ -427,12 +538,13 @@ def Resultados():
             sql = sql + f"AND jornada >= {valorBanderaJi} "
         if (banderaJf):
             sql = sql + f"AND jornada <= {valorBanderaJf} "
-        sql = sql + f"ORDER BY jornada "
+        sql = sql + f"ORDER BY CAST(jornada as integer) "
     elif (comandoTop):
-        sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
-        sql = sql + f"WHERE temporada = '{temporada}' "
-        sql = sql + f"ORDER BY jornada = '{valorJornada}' "
-        # La función que calcule puntos debe usarse también para comandoTop. Ya teniendo la tabla se escogen los TOP SUPERIOR O INFERIOR.
+        sql1 = f"SELECT DISTINCT(equipo1) FROM laliga WHERE temporada = '{temporada}'"
+
+        sql2 = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
+        sql2 = sql2 + f"WHERE temporada = '{temporada}' "
+        sql2 = sql2 + f"ORDER BY CAST(jornada as integer) "
 
     if (comandoGoles):
         print(sql1)
@@ -460,7 +572,7 @@ def Resultados():
         filas1 = ConsultaBaseDatos(sql1)
         filas2 = ConsultaBaseDatos(sql2)
         print(filas1)
-        # print(filas2)
+        print(filas2)
 
         ProcesarTabla(filas1, filas2)
 
@@ -492,8 +604,15 @@ def Resultados():
         print(
             f'Generando archivo de resultados de temporada {temporada} del {primerEquipo}')
 
+        ProcesarPartidos(filas)
+
     elif (comandoTop):
-        print(filas)
+        filas1 = ConsultaBaseDatos(sql1)
+        filas2 = ConsultaBaseDatos(sql2)
+        print(filas1)
+        print(filas2)
+
+        ProcesarTop(filas1, filas2)
 
     print('______________________________________________________________________________________________________________')
     print(comandoActual)
