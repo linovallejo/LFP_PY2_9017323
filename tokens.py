@@ -38,9 +38,9 @@ t_GUION = '-'
 t_GUIONBAJO = '_'
 
 # Banderas
-t_EFE = 'f'
-t_ENE = 'n'
-t_JOTA = 'j'
-t_I = 'i'
+t_JOTAI = '-ji'
+t_ENE = '-n'
+t_JOTAF = '-jf'
+t_EFE = '-f'
 
-t_BANDERAS = [t_EFE, t_ENE, t_JOTA, t_I]
+t_BANDERAS = [t_JOTAI, t_ENE, t_JOTAF, t_EFE]
