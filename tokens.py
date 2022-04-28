@@ -43,4 +43,4 @@ t_ENE = '-n'
 t_JOTAF = '-jf'
 t_EFE = '-f'
 
-t_BANDERAS = [t_JOTAI, t_ENE, t_JOTAF, t_EFE]
+t_BANDERAS = [t_JOTAI, t_ENE, t_JOTAF, t_EFE, 'f', 'n', 'j', 'i']

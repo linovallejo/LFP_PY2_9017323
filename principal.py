@@ -30,15 +30,27 @@ comandoVersus = False
 comandoTemporada = False
 comandoJornada = False
 valorJornada = 0
-comandoGoles, comandoLocal, comandoVisitante, comandoTotal = False
+comandoGoles = False
+comandoLocal = False
+comandoVisitante = False
+comandoTotal = False
 comandoTabla = False
 comandoPartidos = False
-comandoTop, comandoSuperior, comandoInferior = False
+comandoTop = False
+comandoSuperior = False
+comandoInferior = False
 comandoAdios = False
-primerEquipo, segundoEquipo = False
-anio1, anio2, temporada = False
-banderaArchivo, banderaN, banderaJi, banderaJf = False
+primerEquipo = False
+segundoEquipo = False
+anio1 = False
+anio2 = False
+temporada = False
+banderaArchivo = False
+banderaN = False
+banderaJi = False
+banderaJf = False
 valorArchivo = ''
+valorDefectoN = 5
 valorBanderaN = 0
 valorBanderaJi = 0
 valorBanderaJf = 0
@@ -48,10 +60,10 @@ segundoEquipo = None
 anio1 = 0
 anio2 = 0
 temporada = ''
-banderaArchivo = ''
-banderaN = 0
-banderaJi = 0
-banderaJf = 0
+# banderaArchivo = ''
+# banderaN = 0
+# banderaJi = 0
+# banderaJf = 0
 
 
 def inicioValido(c):
@@ -67,10 +79,13 @@ def estadoCero():
     comandoActual = 'JORNADA 2 TEMPORADA <2017-2018> -f reporteJornada2'  # PASSED
     comandoActual = 'GOLES LOCAL "Real Madrid" TEMPORADA <2018-2019>'  # PASSED
     comandoActual = 'GOLES VISITANTE "Sevilla" TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'GOLES LOCAL "Valencia" TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'GOLES VISITANTE "Valencia" TEMPORADA <2018-2019>'  # PASSED
+    comandoActual = 'GOLES TOTAL "Valencia" TEMPORADA <2018-2019>'  # PASSED
     comandoActual = 'TABLA TEMPORADA <2017-2018> -f reporteTemporada'  # PASSED
     comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018'  # PASSED
-    comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018 -ji 20 -jf 38'  # PASSED
-    comandoActual = 'TOP SUPERIOR TEMPORADA <2017-2018> -n 5'  # PASSED
+    comandoActual = 'PARTIDOS "Real Madrid" TEMPORADA <2017-2018> -f RealMadrid20172018 -ji 37 -jf 38'  # PASSED
+    # comandoActual = 'TOP SUPERIOR TEMPORADA <2017-2018> -n 5'  # PASSED
     # comandoActual = 'ADIOS'  # not working :thinker
 
 
@@ -189,6 +204,8 @@ def Resultados():
     global banderaArchivo, banderaN, banderaJi, banderaJf
     global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
     sql = ''
+    sql1 = ''
+    sql2 = ''
 
     if (comandoResultado):
         sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
@@ -200,17 +217,14 @@ def Resultados():
         sql = sql + f"WHERE temporada = '{temporada}' "
         sql = sql + f"AND jornada = '{valorJornada}' "
     elif (comandoGoles):
-        if (comandoLocal):
-            sql = "SELECT SUM(goles1) as TotalGoles FROM laliga "
-            sql = sql + f"WHERE equipo1 = '{primerEquipo}' "
-        elif (comandoVisitante):
-            sql = "SELECT SUM(goles2) as TotalGoles FROM laliga "
-            sql = sql + f"WHERE equipo2 = '{primerEquipo}' "
-        elif (comandoTotal):
-            sql = "SELECT SUM(goles1+goles2) as TotalGoles FROM laliga "
-            sql = sql + \
-                f"WHERE equipo1 = '{primerEquipo}' OR equipo2 = '{primerEquipo}' "
-        sql = sql + f"AND temporada = '{temporada}' "
+        if (comandoLocal or comandoTotal):
+            sql1 = "SELECT SUM(goles1) as TotalGoles FROM laliga "
+            sql1 = sql1 + f"WHERE equipo1 = '{primerEquipo}' "
+            sql1 = sql1 + f"AND temporada = '{temporada}' "
+        if (comandoVisitante or comandoTotal):
+            sql2 = "SELECT SUM(goles2) as TotalGoles FROM laliga "
+            sql2 = sql2 + f"WHERE equipo2 = '{primerEquipo}' "
+            sql2 = sql2 + f"AND temporada = '{temporada}' "
     elif (comandoTabla):
         sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
         sql = sql + f"WHERE temporada = '{temporada}' "
@@ -218,29 +232,52 @@ def Resultados():
         # La función que calcule puntos debe usarse también para comandoTop
     elif (comandoPartidos):
         sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
-        sql = sql + f"WHERE equipo1 = '{primerEquipo}' "
+        sql = sql + \
+            f"WHERE (equipo1 = '{primerEquipo}' OR equipo2 = '{primerEquipo}') "
         sql = sql + f"AND temporada = '{temporada}' "
         if (banderaJi):
             sql = sql + f"AND jornada >= {valorBanderaJi} "
-        elif (banderaJf):
+        if (banderaJf):
             sql = sql + f"AND jornada <= {valorBanderaJf} "
-        sql = sql + f"ORDER BY jornada = '{valorJornada}' "
+        sql = sql + f"ORDER BY jornada "
     elif (comandoTop):
         sql = "SELECT fecha, temporada, jornada, equipo1, equipo2, goles1, goles2 FROM laliga "
         sql = sql + f"WHERE temporada = '{temporada}' "
         sql = sql + f"ORDER BY jornada = '{valorJornada}' "
         # La función que calcule puntos debe usarse también para comandoTop. Ya teniendo la tabla se escogen los TOP SUPERIOR O INFERIOR.
 
-    filas = ConsultaBaseDatos(sql)
+    if (comandoGoles):
+        print(sql1)
+        print(sql2)
+        filas1 = ConsultaBaseDatos(sql1)
+        filas2 = ConsultaBaseDatos(sql2)
+    else:
+        filas = ConsultaBaseDatos(sql)
+        print(sql)
 
-    print(sql)
-    print(filas)
+    if (comandoResultado):
+        golesPrimerEquipo = filas[0][5]
+        golesSegundoEquipo = filas[0][6]
 
-    golesPrimerEquipo = filas[0][5]
-    golesSegundoEquipo = filas[0][6]
+        print(
+            f'El resultado de este partido fue: {primerEquipo} {golesPrimerEquipo} - {segundoEquipo} {golesSegundoEquipo}')
 
-    print(
-        f'El resultado de este partido fue: {primerEquipo} {golesPrimerEquipo} - {segundoEquipo} {golesSegundoEquipo}')
+    elif (comandoJornada):
+        print(filas)
+    elif (comandoGoles):
+        if (comandoLocal or comandoTotal):
+            print(filas1)
+        if (comandoVisitante or comandoTotal):
+            print(filas2)
+    elif (comandoTabla):
+        print(filas)
+    elif (comandoPartidos):
+        print(filas)
+    elif (comandoTop):
+        print(filas)
+
+    print('______________________________________________________________________________________________________________')
+    print(comandoActual)
 
 
 def AnalisisLexico():
@@ -363,31 +400,32 @@ def AnalisisLexico():
                         te.agregar(error=ErrorLexico(
                             'Undefined', lexemaActual, numeroComando, i, 'Lexema inválido'))
 
-        if (not estadoTresInicio and not estadoCuatroInicio and not estadoCincoInicio and comandoActual[i].strip() != tokens.t_COMILLA and comandoActual[i].strip() != tokens.t_MAYORQUE):
-            if (comandoActual[i].strip() != ''):
-                lexemaActual = lexemaActual + comandoActual[i]
-            else:
-                if (lexemaActual.strip() != ''):
-                    caracterInicial = lexemaActual[0]
-                    if caracterInicial.isupper():
-                        if estado1Valido(lexemaActual):
-                            # estadoUno(lexemaActual)
-                            token = Token('Id', lexemaActual, numeroComando,
-                                          i-len(lexemaActual))
-                            tt.agregar(token)
-                        else:
-                            te.agregar(error=ErrorLexico(
-                                'Undefined', lexemaActual, numeroComando, i, 'Lexema inválido'))
-                    elif caracterInicial.isdigit():
-                        if estado7Valido(lexemaActual):
-                            # estadoSeis(lexemaActual)
-                            token = Token('Entero', lexemaActual,
-                                          numeroComando, i-len(lexemaActual))
-                            tt.agregar(token)
-                        else:
-                            te.agregar(error=ErrorLexico(
-                                'Undefined', lexemaActual, numeroComando, i, 'Lexema inválido'))
-                    lexemaActual = ''
+        if (i < len(comandoActual)):
+            if (not estadoTresInicio and not estadoCuatroInicio and not estadoCincoInicio and comandoActual[i].strip() != tokens.t_COMILLA and comandoActual[i].strip() != tokens.t_MAYORQUE):
+                if (comandoActual[i].strip() != ''):
+                    lexemaActual = lexemaActual + comandoActual[i]
+                else:
+                    if (lexemaActual.strip() != ''):
+                        caracterInicial = lexemaActual[0]
+                        if caracterInicial.isupper():
+                            if estado1Valido(lexemaActual):
+                                # estadoUno(lexemaActual)
+                                token = Token('Id', lexemaActual, numeroComando,
+                                              i-len(lexemaActual))
+                                tt.agregar(token)
+                            else:
+                                te.agregar(error=ErrorLexico(
+                                    'Undefined', lexemaActual, numeroComando, i, 'Lexema inválido'))
+                        elif caracterInicial.isdigit():
+                            if estado7Valido(lexemaActual):
+                                # estadoSeis(lexemaActual)
+                                token = Token('Entero', lexemaActual,
+                                              numeroComando, i-len(lexemaActual))
+                                tt.agregar(token)
+                            else:
+                                te.agregar(error=ErrorLexico(
+                                    'Undefined', lexemaActual, numeroComando, i, 'Lexema inválido'))
+                        lexemaActual = ''
 
         i += 1
 
@@ -426,8 +464,8 @@ def AnalisisSintactico(tt):
                 comandoTemporada = True
             elif (lexema == tokens.tr_JORNADA):
                 comandoJornada = True
-                if (i < len(tokens)):
-                    proximoToken = tokens[i+1]
+                if (i < len(tt.tokens)):
+                    proximoToken = tt.tokens[tt.tokens.index(to)+1]
                     if (proximoToken.id == 'Entero'):
                         if (proximoToken.lexema).isnumeric():
                             valorJornada = proximoToken.lexema
@@ -468,8 +506,8 @@ def AnalisisSintactico(tt):
             anio2 = int(anios[1])
             temporada = str(anio1) + '-' + str(anio2)
         elif (to.id == 'Bandera'):
-            if (i < len(tokens)):
-                proximoToken = tokens[i+1]
+            if (i < len(tt.tokens)):
+                proximoToken = tt.tokens[tt.tokens.index(to)+1]
                 if (lexema == tokens.t_EFE):
                     if (proximoToken.id == 'Archivo'):
                         banderaArchivo = True
@@ -477,23 +515,24 @@ def AnalisisSintactico(tt):
                     # else: ERROR
                 elif (lexema == tokens.t_ENE):
                     if (proximoToken.id == 'Entero'):
-                        banderaArchivo = True
+                        banderaN = True
                         valorBanderaN = proximoToken.lexema
                     # else: ERROR
                 elif (lexema == tokens.t_JOTAI):
                     if (proximoToken.id == 'Entero'):
-                        banderaArchivo = True
+                        banderaJi = True
                         valorBanderaJi = proximoToken.lexema
                     # else: ERROR
                 elif (lexema == tokens.t_JOTAF):
                     if (proximoToken.id == 'Entero'):
-                        banderaArchivo = True
+                        banderaJf = True
                         valorBanderaJf = proximoToken.lexema
                     # else: ERROR
             # else: ERROR
 
-    if (comandoResultado and comandoVersus and comandoTemporada):
-        Resultados()
+    # if (comandoResultado and comandoVersus and comandoTemporada):
+    #     Resultados()
+    Resultados()
 
 
 def ConsultaBaseDatos(sql):
