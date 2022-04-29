@@ -1,9 +1,12 @@
 from tkinter import *
+import tkinter.messagebox
 import pyttsx3
 import threading
+import time
 
 
 def InterfazUsuario():
+    from laligabot import Bot
 
     saved_username = ["You"]
     # ans=["PyBot"]
@@ -103,13 +106,13 @@ def InterfazUsuario():
             self.send_button.pack(side=LEFT, ipady=8)
             self.master.bind("<Return>", self.send_message_insert)
 
-            self.last_sent_label(date="No messages sent.")
+            self.last_sent_label(date="Mensajes no enviados aún.")
             # t2 = threading.Thread(target=self.send_message_insert(, name='t1')
             # t2.start()
 
         def clear_chat(self):
             self.text_box.config(state=NORMAL)
-            self.last_sent_label(date="No messages sent.")
+            self.last_sent_label(date="Mensajes no enviados aún.")
             self.text_box.delete(1.0, END)
             self.text_box.delete(1.0, END)
             self.text_box.config(state=DISABLED)
@@ -175,27 +178,37 @@ def InterfazUsuario():
 
         def send_message_insert(self, message):
             user_input = self.entry_field.get()
-            pr1 = "Human : " + user_input + "\n"
-            self.text_box.configure(state=NORMAL)
-            self.text_box.insert(END, pr1)
-            self.text_box.configure(state=DISABLED)
-            self.text_box.see(END)
-            #t1 = threading.Thread(target=self.playResponce, args=(user_input,))
-            # t1.start()
-            # time.sleep(1)
-            ob = chat(user_input)
-            pr = "PyBot : " + ob + "\n"
-            self.text_box.configure(state=NORMAL)
-            self.text_box.insert(END, pr)
-            self.text_box.configure(state=DISABLED)
-            self.text_box.see(END)
-            self.last_sent_label(
-                str(time.strftime("Last message sent: " + '%B %d, %Y' + ' at ' + '%I:%M %p')))
-            self.entry_field.delete(0, END)
-            time.sleep(0)
-            t2 = threading.Thread(target=self.playResponce, args=(ob,))
-            t2.start()
-            # return ob
+            if (user_input.strip() != ''):
+                pr1 = "Humano : " + user_input + "\n"
+                self.text_box.configure(state=NORMAL)
+                self.text_box.insert(END, pr1)
+                self.text_box.configure(state=DISABLED)
+                self.text_box.see(END)
+                #t1 = threading.Thread(target=self.playResponce, args=(user_input,))
+                # t1.start()
+                # time.sleep(1)
+                # ob = "Hello Lino"
+                tkinter.messagebox.showinfo(
+                    "Mensaje", str(user_input))
+
+                ob = Bot(user_input)
+                tkinter.messagebox.showinfo(
+                    "Respuesta", str(ob))
+                pr = "LaLigaBot : " + str(ob) + "\n"
+                self.text_box.configure(state=NORMAL)
+                self.text_box.insert(END, pr)
+                self.text_box.configure(state=DISABLED)
+                self.text_box.see(END)
+                self.last_sent_label(
+                    str(time.strftime("Ultimo mensaje enviado: " + '%B %d, %Y' + ' at ' + '%I:%M %p')))
+                self.entry_field.delete(0, END)
+                time.sleep(0)
+                #t2 = threading.Thread(target=self.playResponce, args=(ob,))
+                # t2.start()
+                # return ob
+            else:
+                tkinter.messagebox.showerror(
+                    "Error", "El comando es una cadena vacía!")
 
     root = Tk()
 
@@ -203,3 +216,6 @@ def InterfazUsuario():
     root.geometry(window_size)
     root.title("LaLiga Bot")
     root.mainloop()
+
+
+InterfazUsuario()

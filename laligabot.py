@@ -204,6 +204,7 @@ def ProcesarJornada(filas):
     global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
     global banderaArchivo, banderaN, banderaJi, banderaJf
     global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
+    mensaje = ''
 
     codigoHTML = ''
     codigoHTML += '<html><head>'
@@ -260,8 +261,8 @@ def ProcesarJornada(filas):
         try:
             rep.write(codigoHTML)
         except:
-            print(
-                mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
+            # print(
+            mensaje = 'No se pudo crear el Reporte. Contacte a soporte técnico :-).'
 
     os.system("open /Applications/Safari.app " + nombreArchivoReporte)
 
@@ -272,6 +273,7 @@ def ProcesarPartidos(filas):
     global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
     global banderaArchivo, banderaN, banderaJi, banderaJf
     global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
+    mensaje = ''
 
     codigoHTML = ''
     codigoHTML += '<html><head>'
@@ -328,8 +330,8 @@ def ProcesarPartidos(filas):
         try:
             rep.write(codigoHTML)
         except:
-            print(
-                mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
+            # print(
+            mensaje = 'No se pudo crear el Reporte. Contacte a soporte técnico :-).'
 
     os.system("open /Applications/Safari.app " + nombreArchivoReporte)
 
@@ -389,7 +391,8 @@ def CalcularTabla(filas1, filas2, descendente):
                     item.puntos += puntos
 
     if (descendente):
-        tabla = sorted(equipos, key=lambda equipo: equipo.puntos, reverse=True)
+        tabla = sorted(equipos, key=lambda equipo: equipo.puntos,
+                       reverse=True)
     else:
         tabla = sorted(equipos, key=lambda equipo: equipo.puntos)
 
@@ -402,11 +405,12 @@ def ProcesarTabla(filas1, filas2):
     global inicioFilaColumna, inicioColumna, finalColumna, finalFilaColumna
     global banderaArchivo, banderaN, banderaJi, banderaJf
     global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
+    mensaje = ''
 
     tabla = CalcularTabla(filas1, filas2, True)
 
-    for eq in tabla:
-        print(f'{eq.nombre[0]} - {eq.puntos}')
+    # for eq in tabla:
+    # print(f'{eq.nombre[0]} - {eq.puntos}')
 
     codigoHTML = ''
     codigoHTML += '<html><head>'
@@ -455,8 +459,8 @@ def ProcesarTabla(filas1, filas2):
         try:
             rep.write(codigoHTML)
         except:
-            print(
-                mensaje='No se pudo crear el Reporte. Contacte a soporte técnico :-).')
+            # print(
+            mensaje = 'No se pudo crear el Reporte. Contacte a soporte técnico :-).'
 
     os.system("open /Applications/Safari.app " + nombreArchivoReporte)
 
@@ -480,16 +484,22 @@ def ProcesarTop(filas1, filas2):
         tabla = CalcularTabla(filas1, filas2, True)
         tipo = 'superior'
 
-    print(f'El top {tipo} de la temporada {temporada} fue:')
+    # print(f'El top {tipo} de la temporada {temporada} fue:')
+    resultado = ''
+    resultado += f'El top {tipo} de la temporada {temporada} fue:\r\n'
     i = 1
     for eq in tabla:
-        print(f'{str(i)} - {eq.nombre[0]}')
+        # print(f'{str(i)} - {eq.nombre[0]}')
+        resultado += f'{str(i)} - {eq.nombre[0]}\r\n'
         i += 1
         if (i > limite):
             break
 
+    return resultado
 
-def Resultados():
+
+def Procesamiento():
+    resultado = ''
     global comandoResultado, comandoVersus, comandoTemporada
     global comandoJornada, valorJornada
     global comandoGoles, comandoLocal, comandoVisitante, comandoTotal
@@ -546,79 +556,82 @@ def Resultados():
         sql2 = sql2 + f"WHERE temporada = '{temporada}' "
         sql2 = sql2 + f"ORDER BY CAST(jornada as integer) "
 
-    if (comandoGoles):
-        print(sql1)
-        print(sql2)
-        filas1 = ConsultaBaseDatos(sql1)
-        filas2 = ConsultaBaseDatos(sql2)
-    else:
-        filas = ConsultaBaseDatos(sql)
-        print(sql)
+    filas = ConsultaBaseDatos(sql)
+    # print(sql)
 
     if (comandoResultado):
+        # print(filas)
+        # print(sql)
         golesPrimerEquipo = filas[0][5]
         golesSegundoEquipo = filas[0][6]
 
-        print(
-            f'El resultado de este partido fue: {primerEquipo} {golesPrimerEquipo} - {segundoEquipo} {golesSegundoEquipo}')
+        # print(
+        resultado = f'El resultado de este partido fue: {primerEquipo} {golesPrimerEquipo} - {segundoEquipo} {golesSegundoEquipo}'
 
     elif (comandoJornada):
-        print(filas)
+        # print(filas)
 
         ProcesarJornada(filas)
 
-    elif (comandoTabla):
-
+    elif (comandoGoles):
+        # print(sql1)
+        # print(sql2)
         filas1 = ConsultaBaseDatos(sql1)
         filas2 = ConsultaBaseDatos(sql2)
-        print(filas1)
-        print(filas2)
 
-        ProcesarTabla(filas1, filas2)
-
-    elif (comandoGoles):
         totalGoles = 0
         expresion = ''
         if (comandoLocal or comandoTotal):
-            print(filas1)
+            # print(sql1)
+            # print(filas1)
             if (comandoLocal):
                 expresion = ' como local '
             if (comandoTotal):
                 expresion = ' en total '
             totalGoles += int(filas1[0][0])
         if (comandoVisitante or comandoTotal):
-            print(filas2)
+            # print(filas2)
             if (comandoVisitante):
                 expresion = ' como visitante '
             if (comandoTotal):
                 expresion = ' en total '
             totalGoles += int(filas2[0][0])
 
-        print(
-            f'Los goles anotados por el {primerEquipo} {expresion} en la temporada {temporada} fueron {totalGoles}')
+        # print(
+        resultado = f'Los goles anotados por el {primerEquipo} {expresion} en la temporada {temporada} fueron {totalGoles}'
 
     elif (comandoTabla):
-        print(filas)
+
+        filas1 = ConsultaBaseDatos(sql1)
+        filas2 = ConsultaBaseDatos(sql2)
+        # print(filas1)
+        # print(filas2)
+
+        ProcesarTabla(filas1, filas2)
+
     elif (comandoPartidos):
-        print(filas)
-        print(
-            f'Generando archivo de resultados de temporada {temporada} del {primerEquipo}')
+        # print(filas)
+        # print(
+        resultado = f'Generando archivo de resultados de temporada {temporada} del {primerEquipo}'
 
         ProcesarPartidos(filas)
 
     elif (comandoTop):
         filas1 = ConsultaBaseDatos(sql1)
         filas2 = ConsultaBaseDatos(sql2)
-        print(filas1)
-        print(filas2)
+        # print(filas1)
+        # print(filas2)
 
-        ProcesarTop(filas1, filas2)
+        resultado = ProcesarTop(filas1, filas2)
 
-    print('______________________________________________________________________________________________________________')
-    print(comandoActual)
+    # print('______________________________________________________________________________________________________________')
+    # print(comandoActual)
+
+    return resultado
 
 
 def AnalisisLexico():
+    respuesta = ''
     global comandoActual, lexemaActual, inicioSesion, finSesion, numeroComando
 
     inicioSesion = True
@@ -767,16 +780,19 @@ def AnalisisLexico():
 
         i += 1
 
-    ImprimirTablaTokens(tt)
-    AnalisisSintactico(tt)
+    # ImprimirTablaTokens(tt)
+    respuesta = AnalisisSintactico(tt)
+
+    return respuesta
 
 
-def ImprimirTablaTokens(tt):
-    for to in tt.tokens:
-        print(f'{to.id} - {to.lexema} - {to.fila} - {to.columna}')
+# def ImprimirTablaTokens(tt):
+ #   for to in tt.tokens:
+    # print(f'{to.id} - {to.lexema} - {to.fila} - {to.columna}')
 
 
 def AnalisisSintactico(tt):
+    respuesta = ''
     global comandoResultado, comandoVersus, comandoTemporada
     global comandoJornada, valorJornada
     global comandoGoles, comandoLocal, comandoVisitante, comandoTotal
@@ -789,9 +805,23 @@ def AnalisisSintactico(tt):
     global banderaArchivo, banderaN, banderaJi, banderaJf
     global valorArchivo, valorBanderaN, valorBanderaJi, valorBanderaJf
 
+    ttLocal = []
+    # ttLocal = TablaDeTokens()
+    j = 0
+    while j < len(tt.tokens):
+        # for t in tt.tokens:
+        t = tt.tokens[j]
+        linea = int(t.fila)
+        if (linea == numeroComando):
+            # ttLocal.agregar(t)
+            ttLocal.append(t)
+        j += 1
+
     lexema = ''
+    linea = 0
     i = 0
-    for to in tt.tokens:
+    while i < len(ttLocal):
+        to = ttLocal[i]
         lexema = to.lexema
         if (to.id == 'Id'):
             if (lexema == tokens.tr_RESULTADO):
@@ -872,9 +902,13 @@ def AnalisisSintactico(tt):
                     # else: ERROR
             # else: ERROR
 
-    # if (comandoResultado and comandoVersus and comandoTemporada):
-    #     Resultados()
-    Resultados()
+        # if (comandoResultado and comandoVersus and comandoTemporada):
+        #     Resultados()
+        i += 1
+
+    respuesta = Procesamiento()
+
+    return respuesta
 
 
 def ConsultaBaseDatos(sql):
@@ -893,8 +927,8 @@ def TestBaseDatos():
 
     curs.execute(
         "SELECT equipo1, equipo2, goles1, goles2 FROM laliga WHERE equipo1 = 'Real Madrid';")
-    for equipo1, equipo2, goles1, goles2 in curs.fetchall():
-        print(equipo1, goles1, equipo2, goles2)
+    # for equipo1, equipo2, goles1, goles2 in curs.fetchall():
+    # print(equipo1, goles1, equipo2, goles2)
 
     conn.close()
 
@@ -967,8 +1001,8 @@ def GenerarReporteErrores(te):
         try:
             rep.write(codigoHTML)
         except:
-            print(
-                mensaje='No se pudo crear el Reporte de Errores. Contacte a soporte técnico :-).')
+            # print(
+            mensaje = 'No se pudo crear el Reporte de Errores. Contacte a soporte técnico :-).'
 
     os.system("open /Applications/Safari.app " +
               nombreArchivoReporteErroresActual)
@@ -1037,15 +1071,15 @@ def GenerarTablaTokens(tt):
         try:
             rep.write(codigoHTML)
         except:
-            print(
-                mensaje='No se pudo crear la Tabla de Tokens. Contacte a soporte técnico :-).')
+            # print(
+            mensaje = 'No se pudo crear la Tabla de Tokens. Contacte a soporte técnico :-).'
 
     os.system("open /Applications/Safari.app " + nombreArchivoTtsActual)
 
 
 estadoCero()
 
-AnalisisLexico()
+# AnalisisLexico()
 
 
 # TestBaseDatos()
@@ -1077,10 +1111,75 @@ def opcionMenuSeleccionada(opcion):
         AbrirManualTecnico()
 
 
-def CrearInterfazUsuario():
-    from gui import InterfazUsuario
+# def CrearInterfazUsuario():
+#     from gui import InterfazUsuario
 
-    InterfazUsuario()
+#     InterfazUsuario()
 
 
 # CrearInterfazUsuario()
+
+
+def Bot(mensaje):
+    global comandoActual, lexemaActual
+    global nombrePorDefectoArchivo
+    global comandoResultado, comandoVersus, comandoTemporada, comandoJornada, valorJornada
+    global comandoGoles, comandoLocal, comandoVisitante, comandoTotal
+    global comandoTabla, comandoPartidos
+    global comandoTop, comandoSuperior, comandoInferior
+    global comandoAdios
+    global primerEquipo, segundoEquipo
+    global anio1, anio2
+    global temporada
+    global banderaArchivo, banderaN, banderaJi, banderaJf
+    global valorArchivo, valorDefectoN, valorBanderaN, valorBanderaJi, valorBanderaJf
+    global numeroComando
+    comandoActual = ''
+    lexemaActual = ''
+
+    nombrePorDefectoArchivo = 'reporte'
+
+    comandoResultado = False
+    comandoVersus = False
+    comandoTemporada = False
+    comandoJornada = False
+    valorJornada = 0
+    comandoGoles = False
+    comandoLocal = False
+    comandoVisitante = False
+    comandoTotal = False
+    comandoTabla = False
+    comandoPartidos = False
+    comandoTop = False
+    comandoSuperior = False
+    comandoInferior = False
+    comandoAdios = False
+    primerEquipo = False
+    segundoEquipo = False
+    anio1 = False
+    anio2 = False
+    temporada = False
+    banderaArchivo = False
+    banderaN = False
+    banderaJi = False
+    banderaJf = False
+    valorArchivo = ''
+    valorDefectoN = 5
+    valorBanderaN = 0
+    valorBanderaJi = 0
+    valorBanderaJf = 0
+
+    primerEquipo = None
+    segundoEquipo = None
+    anio1 = 0
+    anio2 = 0
+    temporada = ''
+
+    comandoActual = mensaje
+    respuesta = AnalisisLexico()
+    return respuesta
+
+
+# print(Bot('GOLES TOTAL "Real Madrid" TEMPORADA <2019-2020>'))
+# print(Bot('RESULTADO "Real Madrid" VS "Villarreal" TEMPORADA <2019-2020>'))
+# print(Bot('TOP SUPERIOR TEMPORADA <2019-2020> -n 5'))
