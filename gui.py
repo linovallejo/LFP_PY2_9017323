@@ -206,7 +206,16 @@ def InterfazUsuario():
             Bot('limpiar_tokens')
 
         def abrir_manual_usuario(self):
-            tkinter.messagebox.showinfo('LaLigaBot', 'Manual de Usuario')
+            # tkinter.messagebox.showinfo('LaLigaBot', 'Manual de Usuario')
+            import os
+
+            carpetaDocs = 'docs'
+            fullPathDocs = f'{os.getcwd()}/{carpetaDocs}/'
+            nombreArchivoManualTecnico = 'Proyecto2ManualUsuario.pdf'
+            nombreArchivoManualTecnico = fullPathDocs + nombreArchivoManualTecnico
+
+            os.system("open /Applications/Safari.app " +
+                      nombreArchivoManualTecnico)
 
         def abrir_manual_tecnico(self):
             # tkinter.messagebox.showinfo('LaLigaBot', 'Manual Técnico')
