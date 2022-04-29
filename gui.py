@@ -54,7 +54,7 @@ def InterfazUsuario():
 
             help_option = Menu(menu, tearoff=0)
             menu.add_cascade(label="Help", menu=help_option)
-            #help_option.add_command(label="Features", command=self.features_msg)
+            # help_option.add_command(label="Features", command=self.features_msg)
             help_option.add_command(label="About PyBot", command=self.msg)
             help_option.add_command(label="Develpoers", command=self.about)
 
@@ -178,7 +178,7 @@ def InterfazUsuario():
             x.setProperty('volume', 100)
             x.say(responce)
             x.runAndWait()
-            #print("Played Successfully......")
+            # print("Played Successfully......")
 
         def last_sent_label(self, date):
 
@@ -203,12 +203,22 @@ def InterfazUsuario():
 
         def limpiar_log__tokens(self):
             tkinter.messagebox.showinfo('LaLigaBot', 'Limpiar log de tokens')
+            Bot('limpiar_tokens')
 
         def abrir_manual_usuario(self):
             tkinter.messagebox.showinfo('LaLigaBot', 'Manual de Usuario')
 
         def abrir_manual_tecnico(self):
-            tkinter.messagebox.showinfo('LaLigaBot', 'Manual Técnico')
+            # tkinter.messagebox.showinfo('LaLigaBot', 'Manual Técnico')
+            import os
+
+            carpetaDocs = 'docs'
+            fullPathDocs = f'{os.getcwd()}/{carpetaDocs}/'
+            nombreArchivoManualTecnico = 'Proyecto2ManualTecnico.pdf'
+            nombreArchivoManualTecnico = fullPathDocs + nombreArchivoManualTecnico
+
+            os.system("open /Applications/Safari.app " +
+                      nombreArchivoManualTecnico)
 
         def send_message_insert(self, message):
             user_input = self.entry_field.get()
@@ -218,7 +228,7 @@ def InterfazUsuario():
                 self.text_box.insert(END, pr1)
                 self.text_box.configure(state=DISABLED)
                 self.text_box.see(END)
-                #t1 = threading.Thread(target=self.playResponce, args=(user_input,))
+                # t1 = threading.Thread(target=self.playResponce, args=(user_input,))
                 # t1.start()
                 # time.sleep(1)
                 # ob = "Hello Lino"
@@ -237,7 +247,7 @@ def InterfazUsuario():
                     str(time.strftime("Ultimo mensaje enviado: " + '%B %d, %Y' + ' at ' + '%I:%M %p')))
                 self.entry_field.delete(0, END)
                 time.sleep(0)
-                #t2 = threading.Thread(target=self.playResponce, args=(ob,))
+                # t2 = threading.Thread(target=self.playResponce, args=(ob,))
                 # t2.start()
                 # return ob
             else:

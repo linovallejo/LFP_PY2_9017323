@@ -1085,6 +1085,67 @@ estadoCero()
 # TestBaseDatos()
 
 
+def LimpiarTablaTokens():
+    global comandoActual, lexemaActual
+    global nombrePorDefectoArchivo
+    global comandoResultado, comandoVersus, comandoTemporada, comandoJornada, valorJornada
+    global comandoGoles, comandoLocal, comandoVisitante, comandoTotal
+    global comandoTabla, comandoPartidos
+    global comandoTop, comandoSuperior, comandoInferior
+    global comandoAdios
+    global primerEquipo, segundoEquipo
+    global anio1, anio2
+    global temporada
+    global banderaArchivo, banderaN, banderaJi, banderaJf
+    global valorArchivo, valorDefectoN, valorBanderaN, valorBanderaJi, valorBanderaJf
+    global numeroComando
+    global tt, te
+
+    tt = []
+    te = []
+    numeroComando = 0
+    comandoActual = ''
+    lexemaActual = ''
+
+    nombrePorDefectoArchivo = 'reporte'
+
+    comandoResultado = False
+    comandoVersus = False
+    comandoTemporada = False
+    comandoJornada = False
+    valorJornada = 0
+    comandoGoles = False
+    comandoLocal = False
+    comandoVisitante = False
+    comandoTotal = False
+    comandoTabla = False
+    comandoPartidos = False
+    comandoTop = False
+    comandoSuperior = False
+    comandoInferior = False
+    comandoAdios = False
+    primerEquipo = False
+    segundoEquipo = False
+    anio1 = False
+    anio2 = False
+    temporada = False
+    banderaArchivo = False
+    banderaN = False
+    banderaJi = False
+    banderaJf = False
+    valorArchivo = ''
+    valorDefectoN = 5
+    valorBanderaN = 0
+    valorBanderaJi = 0
+    valorBanderaJf = 0
+
+    primerEquipo = None
+    segundoEquipo = None
+    anio1 = 0
+    anio2 = 0
+    temporada = ''
+
+
 def Bot(mensaje):
     global comandoActual, lexemaActual
     global nombrePorDefectoArchivo
@@ -1105,6 +1166,8 @@ def Bot(mensaje):
         tokens = tt.tokens
         GenerarTablaTokens(tokens)
         return ''
+    elif (mensaje == 'limpiar_tokens'):
+        LimpiarTablaTokens()
     else:
         comandoActual = ''
         lexemaActual = ''
