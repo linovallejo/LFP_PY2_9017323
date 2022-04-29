@@ -6,11 +6,11 @@ import time
 
 
 def InterfazUsuario():
-    from laligabot import Bot
+    from laligabot import Bot, GenerarTablaTokens
 
-    saved_username = ["You"]
+    saved_username = ["Lino"]
     # ans=["PyBot"]
-    window_size = "400x400"
+    window_size = "1500x400"
 
     class ChatInterface(Frame):
         def __init__(self, master=None):
@@ -45,26 +45,12 @@ def InterfazUsuario():
             font = Menu(options, tearoff=0)
             options.add_cascade(label="Font", menu=font)
             font.add_command(label="Default", command=self.font_change_default)
-            # font.add_command(label="Times", command=self.font_change_times)
-            # font.add_command(label="System", command=self.font_change_system)
-            # font.add_command(label="Helvetica", command=self.font_change_helvetica)
-            # font.add_command(label="Fixedsys", command=self.font_change_fixedsys)
 
             # color theme
             color_theme = Menu(options, tearoff=0)
             options.add_cascade(label="Color Theme", menu=color_theme)
             color_theme.add_command(
                 label="Default", command=self.color_theme_default)
-        # color_theme.add_command(label="Night",command=self.)
-            # color_theme.add_command(label="Grey", command=self.color_theme_grey)
-            # color_theme.add_command(
-            #     label="Blue", command=self.color_theme_dark_blue)
-
-            # color_theme.add_command(
-            #     label="Torque", command=self.color_theme_turquoise)
-            # color_theme.add_command(
-            #     label="Hacker", command=self.color_theme_hacker)
-        # color_theme.add_command(label='Mkbhd',command=self.MKBHD)
 
             help_option = Menu(menu, tearoff=0)
             menu.add_cascade(label="Help", menu=help_option)
@@ -109,6 +95,35 @@ def InterfazUsuario():
             self.last_sent_label(date="Mensajes no enviados aún.")
             # t2 = threading.Thread(target=self.send_message_insert(, name='t1')
             # t2.start()
+
+            self.reporteErrores_button = Button(self.send_button_frame, text="Reporte de errores", width=15, relief=GROOVE, bg='white',
+                                                bd=1, command=lambda: self.abrir_reporte_errores())
+            self.reporteErrores_button.pack(side=LEFT, ipady=16)
+
+            self.limpiarLogErrores_button = Button(self.send_button_frame, text="Limpiar log de errores", width=15, relief=GROOVE, bg='white',
+                                                   bd=1, command=lambda: self.limpiar_log__errores(), activebackground="#FFFFFF",
+                                                   activeforeground="#000000")
+            self.limpiarLogErrores_button.pack(side=LEFT, ipady=16)
+
+            self.reporteTokens_button = Button(self.send_button_frame, text="Reporte de tokens", width=10, relief=GROOVE, bg='white',
+                                               bd=1, command=lambda: self.abrir_reporte_tokens(), activebackground="#FFFFFF",
+                                               activeforeground="#000000")
+            self.reporteTokens_button.pack(side=LEFT, ipady=16)
+
+            self.limpiarLogTokens_button = Button(self.send_button_frame, text="Limpiar log de tokens", width=15, relief=GROOVE, bg='white',
+                                                  bd=1, command=lambda: self.limpiar_log__tokens(), activebackground="#FFFFFF",
+                                                  activeforeground="#000000")
+            self.limpiarLogTokens_button.pack(side=LEFT, ipady=16)
+
+            self.manualUsuario_button = Button(self.send_button_frame, text="Manual de usuario", width=10, relief=GROOVE, bg='white',
+                                               bd=1, command=lambda: self.abrir_manual_usuario(), activebackground="#FFFFFF",
+                                               activeforeground="#000000")
+            self.manualUsuario_button.pack(side=LEFT, ipady=16)
+
+            self.manualTecnico_button = Button(self.send_button_frame, text="Manual Técnico", width=10, relief=GROOVE, bg='white',
+                                               bd=1, command=lambda: self.abrir_manual_tecnico(), activebackground="#FFFFFF",
+                                               activeforeground="#000000")
+            self.manualTecnico_button.pack(side=LEFT, ipady=16)
 
         def clear_chat(self):
             self.text_box.config(state=NORMAL)
@@ -175,6 +190,25 @@ def InterfazUsuario():
             self.sent_label = Label(
                 self.entry_frame, font="Verdana 7", text=date, bg=self.tl_bg2, fg=self.tl_fg)
             self.sent_label.pack(side=LEFT, fill=X, padx=3)
+
+        def abrir_reporte_errores(self):
+            tkinter.messagebox.showinfo('LaLigaBot', 'Reporte errores')
+
+        def limpiar_log__errores(self):
+            tkinter.messagebox.showinfo('LaLigaBot', 'Limpiar log de errores')
+
+        def abrir_reporte_tokens(self):
+            tkinter.messagebox.showinfo('LaLigaBot', 'Reporte tokens')
+            Bot('tokens')
+
+        def limpiar_log__tokens(self):
+            tkinter.messagebox.showinfo('LaLigaBot', 'Limpiar log de tokens')
+
+        def abrir_manual_usuario(self):
+            tkinter.messagebox.showinfo('LaLigaBot', 'Manual de Usuario')
+
+        def abrir_manual_tecnico(self):
+            tkinter.messagebox.showinfo('LaLigaBot', 'Manual Técnico')
 
         def send_message_insert(self, message):
             user_input = self.entry_field.get()

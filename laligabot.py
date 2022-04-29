@@ -1085,41 +1085,6 @@ estadoCero()
 # TestBaseDatos()
 
 
-# UI
-
-def opcionMenuSeleccionada(opcion):
-    global archivoAnalizado, tt, te
-    opcion = variable.get()
-    if (opcion == "---Seleccione-------"):
-        messagebox.showerror(
-            'Error', 'Debe seleccionar alguna de las otras opciones')
-    elif (opcion == "Reporte de tokens"):
-        if (archivoAnalizado):
-            GenerarTablaTokens(tt.tokens)
-        else:
-            messagebox.showerror(
-                'Error', 'Aún no se ha analizado un archivo .form')
-    elif (opcion == 'Reporte de errores'):
-        if (archivoAnalizado):
-            GenerarReporteErrores(te)
-        else:
-            messagebox.showerror(
-                'Error', 'Aún no se ha analizado un archivo .form')
-    elif (opcion == 'Manual de Usuario'):
-        AbrirManualUsuario()
-    elif (opcion == 'Manual Técnico'):
-        AbrirManualTecnico()
-
-
-# def CrearInterfazUsuario():
-#     from gui import InterfazUsuario
-
-#     InterfazUsuario()
-
-
-# CrearInterfazUsuario()
-
-
 def Bot(mensaje):
     global comandoActual, lexemaActual
     global nombrePorDefectoArchivo
@@ -1134,49 +1099,56 @@ def Bot(mensaje):
     global banderaArchivo, banderaN, banderaJi, banderaJf
     global valorArchivo, valorDefectoN, valorBanderaN, valorBanderaJi, valorBanderaJf
     global numeroComando
-    comandoActual = ''
-    lexemaActual = ''
+    global tt
 
-    nombrePorDefectoArchivo = 'reporte'
+    if (mensaje == 'tokens'):
+        tokens = tt.tokens
+        GenerarTablaTokens(tokens)
+        return ''
+    else:
+        comandoActual = ''
+        lexemaActual = ''
 
-    comandoResultado = False
-    comandoVersus = False
-    comandoTemporada = False
-    comandoJornada = False
-    valorJornada = 0
-    comandoGoles = False
-    comandoLocal = False
-    comandoVisitante = False
-    comandoTotal = False
-    comandoTabla = False
-    comandoPartidos = False
-    comandoTop = False
-    comandoSuperior = False
-    comandoInferior = False
-    comandoAdios = False
-    primerEquipo = False
-    segundoEquipo = False
-    anio1 = False
-    anio2 = False
-    temporada = False
-    banderaArchivo = False
-    banderaN = False
-    banderaJi = False
-    banderaJf = False
-    valorArchivo = ''
-    valorDefectoN = 5
-    valorBanderaN = 0
-    valorBanderaJi = 0
-    valorBanderaJf = 0
+        nombrePorDefectoArchivo = 'reporte'
 
-    primerEquipo = None
-    segundoEquipo = None
-    anio1 = 0
-    anio2 = 0
-    temporada = ''
+        comandoResultado = False
+        comandoVersus = False
+        comandoTemporada = False
+        comandoJornada = False
+        valorJornada = 0
+        comandoGoles = False
+        comandoLocal = False
+        comandoVisitante = False
+        comandoTotal = False
+        comandoTabla = False
+        comandoPartidos = False
+        comandoTop = False
+        comandoSuperior = False
+        comandoInferior = False
+        comandoAdios = False
+        primerEquipo = False
+        segundoEquipo = False
+        anio1 = False
+        anio2 = False
+        temporada = False
+        banderaArchivo = False
+        banderaN = False
+        banderaJi = False
+        banderaJf = False
+        valorArchivo = ''
+        valorDefectoN = 5
+        valorBanderaN = 0
+        valorBanderaJi = 0
+        valorBanderaJf = 0
 
-    comandoActual = mensaje
-    respuesta = AnalisisLexico()
+        primerEquipo = None
+        segundoEquipo = None
+        anio1 = 0
+        anio2 = 0
+        temporada = ''
+
+        comandoActual = mensaje
+        respuesta = AnalisisLexico()
     return respuesta
 
 
